@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "identifier": "com.exclusipsea.supertools",
   "build": {
-    "frontendDist": "../out",
+    "frontendDist": "https://super-tools-dashboard.vercel.app",
     "devUrl": "http://localhost:3006",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
   },
   "app": {
     "windows": [
