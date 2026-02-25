@@ -1,180 +1,105 @@
 'use client';
 
-import { useState } from 'react';
 import { 
   Receipt, 
   ChefHat, 
   Users, 
   Mic, 
   Scale,
-  ExternalLink,
-  Globe,
-  Copy,
-  Check
+  ArrowUpRight
 } from 'lucide-react';
 
-interface App {
-  name: string;
-  description: string;
-  port: number;
-  icon: React.ReactNode;
-  color: string;
-  url: string;
-  localUrl: string;
-}
-
-const apps: App[] = [
+const apps = [
   {
     name: 'QuickReceipt',
     description: 'Scan and organize receipts with AI',
-    port: 3000,
-    icon: <Receipt className="w-8 h-8" />,
-    color: 'bg-blue-500',
+    icon: Receipt,
+    accent: 'text-cyan-400',
+    border: 'hover:border-cyan-400/30',
     url: 'https://windsurf-project-2-one.vercel.app',
-    localUrl: 'http://localhost:3000'
   },
   {
     name: 'Kitchen Commander',
     description: 'Pantry inventory & recipe suggestions',
-    port: 3001,
-    icon: <ChefHat className="w-8 h-8" />,
-    color: 'bg-emerald-500',
-    url: 'https://kitchen-commander-9sqwqej1b-landons-projects-9fcc50a5.vercel.app',
-    localUrl: 'http://localhost:3001'
+    icon: ChefHat,
+    accent: 'text-green-400',
+    border: 'hover:border-green-400/30',
+    url: 'https://kitchen-commander.vercel.app',
   },
   {
     name: 'PersonaSync',
     description: 'Writing style analyzer & message drafter',
-    port: 3002,
-    icon: <Users className="w-8 h-8" />,
-    color: 'bg-rose-500',
-    url: 'https://persona-sync.vercel.app',
-    localUrl: 'http://localhost:3002'
+    icon: Users,
+    accent: 'text-rose-400',
+    border: 'hover:border-rose-400/30',
+    url: 'https://personasync.vercel.app',
   },
   {
     name: 'VoiceTask',
     description: 'Voice-to-text task organizer',
-    port: 3003,
-    icon: <Mic className="w-8 h-8" />,
-    color: 'bg-amber-500',
+    icon: Mic,
+    accent: 'text-violet-400',
+    border: 'hover:border-violet-400/30',
     url: 'https://voicetask-phi.vercel.app',
-    localUrl: 'http://localhost:3003'
   },
   {
     name: 'Argument Settler',
     description: 'Fact checker with roast feature',
-    port: 3004,
-    icon: <Scale className="w-8 h-8" />,
-    color: 'bg-red-500',
+    icon: Scale,
+    accent: 'text-orange-400',
+    border: 'hover:border-orange-400/30',
     url: 'https://argument-settler.vercel.app',
-    localUrl: 'http://localhost:3004'
   }
 ];
 
 export default function Dashboard() {
-  const [tunnels, setTunnels] = useState<Record<number, string>>({});
-  const [loading, setLoading] = useState<Record<number, boolean>>({});
-  const [copied, setCopied] = useState<number | null>(null);
-
-  const startTunnel = async (port: number) => {
-    setLoading(prev => ({ ...prev, [port]: true }));
-    
-    try {
-      const response = await fetch('/api/tunnel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ port })
-      });
-      
-      const data = await response.json();
-      if (data.url) {
-        setTunnels(prev => ({ ...prev, [port]: data.url }));
-      }
-    } catch (error) {
-      console.error('Failed to start tunnel:', error);
-    } finally {
-      setLoading(prev => ({ ...prev, [port]: false }));
-    }
-  };
-
-  const copyUrl = (url: string, port: number) => {
-    navigator.clipboard.writeText(url);
-    setCopied(port);
-    setTimeout(() => setCopied(null), 2000);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">
-            Super Tools Dashboard
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-5xl mx-auto px-6 py-16">
+        {/* Header */}
+        <div className="mb-16">
+          <h1 className="text-4xl font-semibold tracking-tight mb-3">
+            Super Tools
           </h1>
-          <p className="text-xl text-gray-400">
-            Your AI-powered toolkit, all in one place
+          <p className="text-neutral-500 text-lg">
+            5 AI-powered apps. One toolkit.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {apps.map((app) => (
-            <div
-              key={app.port}
-              className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-gray-600 transition-all hover:scale-105"
-            >
-              <div className={`${app.color} w-16 h-16 rounded-xl flex items-center justify-center text-white mb-4`}>
-                {app.icon}
-              </div>
-              
-              <h2 className="text-2xl font-bold text-white mb-2">{app.name}</h2>
-              <p className="text-gray-400 mb-4">{app.description}</p>
-              
-              <div className="space-y-3">
-                <a
-                  href={app.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl transition-colors"
-                >
-                  <Globe className="w-5 h-5" />
-                  Open Website
-                </a>
-
-                <a
-                  href={app.localUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl transition-colors text-sm"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Open Local
-                </a>
-              </div>
-            </div>
-          ))}
+        {/* App Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+          {apps.map((app) => {
+            const Icon = app.icon;
+            return (
+              <a
+                key={app.name}
+                href={app.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`group flex items-start justify-between p-6 rounded-xl border border-neutral-800 ${app.border} transition-all hover:bg-neutral-950`}
+              >
+                <div className="flex items-start gap-4">
+                  <Icon className={`w-5 h-5 mt-0.5 ${app.accent}`} />
+                  <div>
+                    <h2 className="font-medium text-white group-hover:underline underline-offset-4">
+                      {app.name}
+                    </h2>
+                    <p className="text-neutral-500 text-sm mt-1">
+                      {app.description}
+                    </p>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-neutral-600 group-hover:text-white transition-colors mt-1 shrink-0" />
+              </a>
+            );
+          })}
         </div>
 
-        <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
-          <h3 className="text-xl font-semibold text-white mb-4">Quick Stats</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">5</div>
-              <div className="text-gray-400">Apps Running</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">
-                {Object.keys(tunnels).length}
-              </div>
-              <div className="text-gray-400">Published</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">3000-3004</div>
-              <div className="text-gray-400">Port Range</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">AI</div>
-              <div className="text-gray-400">Powered by GPT</div>
-            </div>
-          </div>
+        {/* Footer */}
+        <div className="border-t border-neutral-800 pt-8">
+          <p className="text-neutral-600 text-sm">
+            Built by Landon Li &middot; Powered by OpenAI
+          </p>
         </div>
       </div>
     </div>
