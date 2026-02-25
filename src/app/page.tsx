@@ -10,8 +10,7 @@ import {
   ArrowUpRight,
   ArrowLeft,
   LayoutGrid,
-  Download,
-  Loader2
+  Download
 } from 'lucide-react';
 
 const apps = [
@@ -23,6 +22,7 @@ const apps = [
     accentBg: 'bg-cyan-400',
     border: 'hover:border-cyan-400/30',
     url: 'https://windsurf-project-2-one.vercel.app',
+    dmg: 'https://github.com/eXclipsea/QuickReceipt/releases/download/v0.1.0/QuickReceipt_0.1.0_aarch64.dmg',
   },
   {
     name: 'Kitchen Commander',
@@ -32,6 +32,7 @@ const apps = [
     accentBg: 'bg-green-400',
     border: 'hover:border-green-400/30',
     url: 'https://kitchen-commander.vercel.app',
+    dmg: 'https://github.com/eXclipsea/kitchen-commander/releases/download/v0.1.0/KitchenCommander_0.1.0_aarch64.dmg',
   },
   {
     name: 'PersonaSync',
@@ -41,6 +42,7 @@ const apps = [
     accentBg: 'bg-rose-400',
     border: 'hover:border-rose-400/30',
     url: 'https://personasync.vercel.app',
+    dmg: 'https://github.com/eXclipsea/persona-drafter/releases/download/v0.1.0/PersonaSync_0.1.0_aarch64.dmg',
   },
   {
     name: 'VoiceTask',
@@ -50,6 +52,7 @@ const apps = [
     accentBg: 'bg-violet-400',
     border: 'hover:border-violet-400/30',
     url: 'https://voicetask-phi.vercel.app',
+    dmg: 'https://github.com/eXclipsea/voice-task/releases/download/v0.1.0/VoiceTask_0.1.0_aarch64.dmg',
   },
   {
     name: 'Argument Settler',
@@ -59,27 +62,12 @@ const apps = [
     accentBg: 'bg-orange-400',
     border: 'hover:border-orange-400/30',
     url: 'https://argument-settler.vercel.app',
+    dmg: 'https://github.com/eXclipsea/neutral-ref/releases/download/v0.1.0/ArgumentSettler_0.1.0_aarch64.dmg',
   }
 ];
 
 export default function Dashboard() {
   const [activeApp, setActiveApp] = useState<typeof apps[0] | null>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-
-  const handlePurchase = async () => {
-    setCheckoutLoading(true);
-    try {
-      const res = await fetch('/api/checkout', { method: 'POST' });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      console.error('Checkout error:', err);
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
 
   // Embedded app view
   if (activeApp) {
@@ -164,27 +152,47 @@ export default function Dashboard() {
 
         {/* Download Section */}
         <div className="rounded-xl border border-indigo-400/20 p-8 mb-16">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight mb-1">
-                Get Super Tools for Mac
-              </h2>
-              <p className="text-neutral-500 text-sm">
-                All 5 apps in one native Mac app. $2.99 to support development.
-              </p>
-            </div>
-            <button
-              onClick={handlePurchase}
-              disabled={checkoutLoading}
-              className="shrink-0 bg-indigo-500 hover:bg-indigo-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-medium py-3 px-6 rounded-lg flex items-center gap-2 transition-colors text-sm"
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold tracking-tight mb-1">
+              Download Mac Apps
+            </h2>
+            <p className="text-neutral-500 text-sm">
+              Free native Mac apps for all Super Tools.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <a
+              href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg"
+              className="flex items-center justify-between p-3 rounded-lg border border-indigo-400/20 hover:bg-indigo-400/5 transition-colors"
             >
-              {checkoutLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              {checkoutLoading ? 'Loading...' : 'Buy & Download — $2.99'}
-            </button>
+              <div className="flex items-center gap-3">
+                <LayoutGrid className="w-4 h-4 text-indigo-400" />
+                <span className="text-sm font-medium">Super Tools (All-in-One)</span>
+              </div>
+              <span className="flex items-center gap-1.5 text-xs text-indigo-400">
+                <Download className="w-3.5 h-3.5" />
+                .dmg
+              </span>
+            </a>
+            {apps.map((app) => {
+              const Icon = app.icon;
+              return (
+                <a
+                  key={app.name}
+                  href={app.dmg}
+                  className={`flex items-center justify-between p-3 rounded-lg border border-neutral-800 hover:bg-neutral-950 transition-colors`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${app.accent}`} />
+                    <span className="text-sm font-medium">{app.name}</span>
+                  </div>
+                  <span className={`flex items-center gap-1.5 text-xs ${app.accent}`}>
+                    <Download className="w-3.5 h-3.5" />
+                    .dmg
+                  </span>
+                </a>
+              );
+            })}
           </div>
         </div>
 
