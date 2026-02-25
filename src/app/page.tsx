@@ -20,6 +20,7 @@ interface App {
   icon: React.ReactNode;
   color: string;
   url: string;
+  localUrl: string;
 }
 
 const apps: App[] = [
@@ -29,7 +30,8 @@ const apps: App[] = [
     port: 3000,
     icon: <Receipt className="w-8 h-8" />,
     color: 'bg-blue-500',
-    url: 'http://localhost:3000'
+    url: 'https://quick-receipt.vercel.app',
+    localUrl: 'http://localhost:3000'
   },
   {
     name: 'Kitchen Commander',
@@ -37,7 +39,8 @@ const apps: App[] = [
     port: 3001,
     icon: <ChefHat className="w-8 h-8" />,
     color: 'bg-emerald-500',
-    url: 'http://localhost:3001'
+    url: 'https://kitchen-commander-9sqwqej1b-landons-projects-9fcc50a5.vercel.app',
+    localUrl: 'http://localhost:3001'
   },
   {
     name: 'PersonaSync',
@@ -45,7 +48,8 @@ const apps: App[] = [
     port: 3002,
     icon: <Users className="w-8 h-8" />,
     color: 'bg-rose-500',
-    url: 'http://localhost:3002'
+    url: 'https://persona-sync.vercel.app',
+    localUrl: 'http://localhost:3002'
   },
   {
     name: 'VoiceTask',
@@ -53,7 +57,8 @@ const apps: App[] = [
     port: 3003,
     icon: <Mic className="w-8 h-8" />,
     color: 'bg-amber-500',
-    url: 'http://localhost:3003'
+    url: 'https://voice-task.vercel.app',
+    localUrl: 'http://localhost:3003'
   },
   {
     name: 'Argument Settler',
@@ -61,7 +66,8 @@ const apps: App[] = [
     port: 3004,
     icon: <Scale className="w-8 h-8" />,
     color: 'bg-red-500',
-    url: 'http://localhost:3004'
+    url: 'https://argument-settler.vercel.app',
+    localUrl: 'http://localhost:3004'
   }
 ];
 
@@ -127,44 +133,21 @@ export default function Dashboard() {
                   href={app.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-xl transition-colors"
+                  className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl transition-colors"
                 >
-                  <ExternalLink className="w-5 h-5" />
-                  Open Local
+                  <Globe className="w-5 h-5" />
+                  Open Website
                 </a>
 
-                {tunnels[app.port] ? (
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={tunnels[app.port]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl transition-colors text-sm"
-                    >
-                      <Globe className="w-4 h-4" />
-                      Public URL
-                    </a>
-                    <button
-                      onClick={() => copyUrl(tunnels[app.port]!, app.port)}
-                      className="p-2 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors"
-                    >
-                      {copied === app.port ? (
-                        <Check className="w-4 h-4 text-green-400" />
-                      ) : (
-                        <Copy className="w-4 h-4 text-gray-400" />
-                      )}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => startTunnel(app.port)}
-                    disabled={loading[app.port]}
-                    className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-2 rounded-xl transition-colors text-sm"
-                  >
-                    <Globe className="w-4 h-4" />
-                    {loading[app.port] ? 'Starting...' : 'Publish to Internet'}
-                  </button>
-                )}
+                <a
+                  href={app.localUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl transition-colors text-sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open Local
+                </a>
               </div>
             </div>
           ))}
