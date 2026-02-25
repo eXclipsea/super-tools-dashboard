@@ -30,7 +30,7 @@ const apps: App[] = [
     port: 3000,
     icon: <Receipt className="w-8 h-8" />,
     color: 'bg-blue-500',
-    url: 'https://quick-receipt.vercel.app',
+    url: 'https://windsurf-project-2-one.vercel.app',
     localUrl: 'http://localhost:3000'
   },
   {
@@ -57,7 +57,7 @@ const apps: App[] = [
     port: 3003,
     icon: <Mic className="w-8 h-8" />,
     color: 'bg-amber-500',
-    url: 'https://voice-task.vercel.app',
+    url: 'https://voicetask-phi.vercel.app',
     localUrl: 'http://localhost:3003'
   },
   {
