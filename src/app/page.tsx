@@ -325,7 +325,6 @@ export default function Dashboard() {
           </p>
         </div>
       </footer>
-      </div>
 
       {/* Purchase Modal */}
       {showPurchaseModal && (
