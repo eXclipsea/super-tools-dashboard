@@ -37,25 +37,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     
     try {
-      // Simple authentication - any email/password combo works
-      // In production, you'd validate against a real backend
-      if (email && password) {
-        const user: User = {
-          email,
-          name: email.split('@')[0] // Use email prefix as name
-        };
-        
-        setUser(user);
+      // Call authentication API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUser(data.user);
         
         // Store session if remember me is checked
         if (rememberMe) {
-          localStorage.setItem('super-tools-user', JSON.stringify(user));
+          localStorage.setItem('super-tools-user', JSON.stringify(data.user));
         } else {
-          sessionStorage.setItem('super-tools-user', JSON.stringify(user));
+          sessionStorage.setItem('super-tools-user', JSON.stringify(data.user));
         }
         
         return true;
       }
+      
       return false;
     } catch (error) {
       console.error('Login error:', error);
