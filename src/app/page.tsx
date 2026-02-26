@@ -84,6 +84,7 @@ export default function Dashboard() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   
   // Login form state
   const [email, setEmail] = useState('');
@@ -103,11 +104,22 @@ export default function Dashboard() {
     
     const success = await login(email, password, rememberMe);
     
-    if (!success) {
+    if (success) {
+      setShowLoginModal(false);
+      setLoginError('');
+    } else {
       setLoginError('Invalid email or password');
     }
     
     setIsLoggingIn(false);
+  };
+
+  const handleAppClick = (route: string) => {
+    if (!user) {
+      setShowLoginModal(true);
+    } else {
+      window.location.href = route;
+    }
   };
 
   const handlePurchase = async () => {
@@ -153,33 +165,47 @@ export default function Dashboard() {
             </div>
             <span className="font-semibold text-[15px] tracking-tight">Super Tools</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <a href="#apps" className="text-[13px] text-white/50 hover:text-white transition-colors">Apps</a>
             <a href="#download" className="text-[13px] text-white/50 hover:text-white transition-colors">Download</a>
-            <a
-              href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg"
-              className="text-[13px] font-medium bg-white text-black px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors"
-            >
-              Get the app
-            </a>
+            {!user ? (
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="text-[13px] font-medium bg-white text-black px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors"
+              >
+                Sign In
+              </button>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-violet-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-medium">
+                    {user.email.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="text-[13px] text-white/60 hover:text-white transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Login Form */}
-      {isLoading ? (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-white/60">Loading...</div>
-        </div>
-      ) : !user ? (
-        <div className="flex items-center justify-center min-h-[60vh] px-6">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-2">Welcome to Super Tools</h2>
-              <p className="text-white/60">Sign in to access all 5 AI tools</p>
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[#0a0a0a] border border-white/[0.1] rounded-2xl p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Sign In</h2>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="text-white/40 hover:text-white/60 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             
             <form onSubmit={handleLogin} className="space-y-4">
@@ -246,28 +272,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      ) : (
-        <>
-          {/* User Info Bar */}
-          <div className="bg-white/[0.02] border-b border-white/[0.04] px-6 py-3">
-            <div className="max-w-6xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user.email.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <span className="text-white/80 text-sm">{user.email}</span>
-              </div>
-              <button
-                onClick={logout}
-                className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
-          </div>
+      )}
 
       {/* Hero */}
       <section className="relative overflow-hidden">
@@ -343,12 +348,12 @@ export default function Dashboard() {
           {apps.map((app) => {
             const Icon = app.icon;
             return (
-              <Link
+              <div
                 key={app.name}
-                href={app.route}
+                onClick={() => handleAppClick(app.route)}
                 onMouseEnter={() => setHoveredApp(app.name)}
                 onMouseLeave={() => setHoveredApp(null)}
-                className="group relative bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-2xl border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer overflow-hidden block"
+                className="group relative bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-2xl border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer overflow-hidden"
                 style={{
                   boxShadow: hoveredApp === app.name 
                     ? `0 0 40px ${app.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
@@ -371,8 +376,15 @@ export default function Dashboard() {
                   <h3 className="text-xl font-semibold mb-2">{app.name}</h3>
                   <p className="text-sm text-white/60 mb-4">{app.tagline}</p>
                   <p className="text-sm text-white/40 leading-relaxed">{app.description}</p>
+                  
+                  {!user && (
+                    <div className="mt-4 flex items-center gap-2 text-xs text-blue-400">
+                      <Lock className="w-3 h-3" />
+                      Sign in required
+                    </div>
+                  )}
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
@@ -439,8 +451,6 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
-        </>
-      )}
 
       {/* Purchase Modal - Always Available */}
       {showPurchaseModal && (
