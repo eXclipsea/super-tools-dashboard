@@ -1,7 +1,7 @@
 # Super Tools - Chrome Extension
 
 ## Description
-5 AI-powered productivity tools in one extension:
+5 AI-powered productivity tools in one **free** Chrome extension:
 
 - **QuickReceipt**: AI receipt scanner and expense tracker
 - **Kitchen Commander**: Smart kitchen manager with recipe suggestions
@@ -15,7 +15,7 @@
 - Floating action button on every page
 - Side panel for easy tool access
 - Context menu integration
-- Keyboard shortcuts
+- Completely free to use
 
 ### 🚀 Productivity Tools
 - **Receipt Scanning**: Point camera at receipts, AI extracts data
@@ -23,6 +23,9 @@
 - **Fact Checking**: Settle arguments with AI-powered research
 - **Writing Assistant**: Draft emails in your personal writing style
 - **Kitchen Management**: Get recipes based on ingredients you have
+
+### 💰 Premium Desktop App
+For the full native experience with offline access and additional features, visit our website to purchase the Super Tools Dashboard desktop app for $2.99.
 
 ### 📊 Analytics
 - Track tool usage

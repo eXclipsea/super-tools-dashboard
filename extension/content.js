@@ -119,7 +119,7 @@
                 </div>
             </div>
             <div class="st-menu-footer">
-                <a href="https://supertoolz.xyz" target="_blank">Get full app →</a>
+                <a href="https://supertoolz.xyz" target="_blank">Visit full website →</a>
             </div>
         `;
         
