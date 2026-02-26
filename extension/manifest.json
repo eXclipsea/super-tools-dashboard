@@ -2,28 +2,31 @@
   "manifest_version": 3,
   "name": "Super Tools - AI Productivity Suite",
   "version": "1.0.0",
-  "description": "5 AI-powered tools: Receipt scanner, voice tasks, fact checker, writing assistant, and kitchen manager",
+  "description": "5 AI-powered tools in one extension: Receipt scanner, voice tasks, fact checker, writing assistant, and kitchen manager",
   "permissions": [
     "activeTab",
     "storage",
     "scripting",
-    "camera",
-    "microphone"
+    "contextMenus",
+    "sidePanel"
   ],
   "host_permissions": [
-    "https://supertoolz.xyz/*"
+    "https://supertoolz.xyz/*",
+    "https://api.openai.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Super Tools",
+    "default_title": "Super Tools - AI Productivity Suite",
     "default_icon": {
       "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
   },
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
@@ -36,10 +39,16 @@
       "js": ["content.js"]
     }
   ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "web_accessible_resources": [
     {
-      "resources": ["injected.js"],
+      "resources": ["injected.js", "sidepanel.html"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "homepage_url": "https://supertoolz.xyz",
+  "author": "Landon Li",
+  "short_name": "Super Tools"
 }

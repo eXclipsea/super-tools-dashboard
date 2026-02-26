@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Tools - Side Panel</title>
+    <style>
+        body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-y: auto;
+        }
+        .header {
+            padding: 20px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .tools {
+            padding: 20px;
+            display: grid;
+            gap: 16px;
+        }
+        .tool {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tool:hover {
+            background: #1a1a1a;
+            border-color: #555;
+            transform: translateX(4px);
+        }
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .tool-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .tool-info h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .tool-info p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #888;
+        }
+        .tool-desc {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+        .utility {
+            font-size: 12px;
+            color: #4ade80;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+        .quick-actions {
+            padding: 0 20px 20px;
+        }
+        .quick-actions h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .action-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .action-btn:hover {
+            background: #252525;
+            border-color: #555;
+        }
+        .footer {
+            padding: 20px;
+            border-top: 1px solid #333;
+            text-align: center;
+            margin-top: auto;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>
+            </svg>
+            Super Tools
+        </h1>
+        <p>AI-powered productivity suite</p>
+    </div>
+    
+    <div class="tools">
+        <div class="tool" data-tool="quickreceipt">
+            <div class="tool-header">
+                <div class="tool-icon" style="background: rgba(34, 211, 238, 0.2);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                    </svg>
+                </div>
+                <div class="tool-info">
+                    <h3>QuickReceipt</h3>
+                    <p>Receipt Scanner</p>
+                </div>
+            </div>
+            <div class="tool-desc">Point your camera at any receipt. AI reads it, categorizes it, and tracks your spending.</div>
+            <div class="utility">Never lose receipts again. Track expenses instantly.</div>
+        </div>
+        
+        <div class="tool" data-tool="kitchen-commander">
+            <div class="tool-header">
+                <div class="tool-icon" style="background: rgba(74, 222, 128, 0.2);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2">
+                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                    </svg>
+                </div>
+                <div class="tool-info">
+                    <h3>Kitchen Commander</h3>
+                    <p>Smart Kitchen Manager</p>
+                </div>
+            </div>
+            <div class="tool-desc">Snap a photo of your fridge. Get pantry inventory and recipes based on what you have.</div>
+            <div class="utility">Reduce food waste. Get recipes from what you have.</div>
+        </div>
+        
+        <div class="tool" data-tool="personasync">
+            <div class="tool-header">
+                <div class="tool-icon" style="background: rgba(251, 113, 133, 0.2);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div class="tool-info">
+                    <h3>PersonaSync</h3>
+                    <p>AI Writing Assistant</p>
+                </div>
+            </div>
+            <div class="tool-desc">Learns your writing style and drafts replies that sound exactly like you.</div>
+            <div class="utility">Save hours on emails. AI writes in your voice.</div>
+        </div>
+        
+        <div class="tool" data-tool="voicetask">
+            <div class="tool-header">
+                <div class="tool-icon" style="background: rgba(167, 139, 250, 0.2);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </div>
+                <div class="tool-info">
+                    <h3>VoiceTask</h3>
+                    <p>Voice Task Organizer</p>
+                </div>
+            </div>
+            <div class="tool-desc">Record a voice memo. AI turns it into organized, prioritized tasks with deadlines.</div>
+            <div class="utility">Capture thoughts instantly. AI organizes your tasks.</div>
+        </div>
+        
+        <div class="tool" data-tool="argument-settler">
+            <div class="tool-header">
+                <div class="tool-icon" style="background: rgba(251, 146, 60, 0.2);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div class="tool-info">
+                    <h3>Argument Settler</h3>
+                    <p>AI Fact Checker</p>
+                </div>
+            </div>
+            <div class="tool-desc">Two sides enter, one verdict leaves. AI fact-checks both arguments with sources.</div>
+            <div class="utility">End debates with facts. AI researches both sides.</div>
+        </div>
+    </div>
+    
+    <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <button class="action-btn" id="scan-receipt">📸 Scan Receipt</button>
+            <button class="action-btn" id="voice-task">🎤 Voice Task</button>
+            <button class="action-btn" id="fact-check">🔍 Fact Check</button>
+            <button class="action-btn" id="sync-writing">✍️ Sync Writing</button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <a href="https://supertoolz.xyz" target="_blank">Get full desktop app →</a>
+    </div>
+    
+    <script src="sidepanel.js"></script>
+</body>
+</html>
