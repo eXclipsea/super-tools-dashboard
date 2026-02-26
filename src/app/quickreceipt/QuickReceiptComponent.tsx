@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Camera, User, Mail, Lock, ArrowRight, Download, X, ArrowLeft } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Camera, User, Mail, Lock, ArrowRight, Download, X, ArrowLeft, Upload, FileImage, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,6 +13,10 @@ export default function QuickReceiptComponent() {
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [scanResult, setScanResult] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +30,39 @@ export default function QuickReceiptComponent() {
     }
     
     setIsLoggingIn(false);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setUploadedImage(event.target?.result as string);
+        setScanResult(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleScanReceipt = async () => {
+    if (!uploadedImage) return;
+    
+    setIsProcessing(true);
+    // Simulate AI processing
+    setTimeout(() => {
+      setScanResult({
+        merchant: 'Coffee Shop',
+        date: '2024-02-25',
+        total: '$12.50',
+        category: 'Food & Dining',
+        items: [
+          { name: 'Latte', price: '$5.50' },
+          { name: 'Croissant', price: '$4.00' },
+          { name: 'Tax', price: '$3.00' }
+        ]
+      });
+      setIsProcessing(false);
+    }, 2000);
   };
 
   // If not logged in, show login form
@@ -176,11 +213,117 @@ export default function QuickReceiptComponent() {
           <p className="text-white/60 text-lg">AI-powered receipt scanning and expense tracking</p>
         </div>
 
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8">
-          <div className="text-center py-12">
-            <Camera className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">Receipt Scanner Ready</h3>
-            <p className="text-white/60">Point your camera at any receipt to get started</p>
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Upload Section */}
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8">
+            <h3 className="text-xl font-semibold text-white mb-6">Upload Receipt</h3>
+            
+            {!uploadedImage ? (
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-white/[0.2] rounded-xl p-8 hover:border-white/[0.4] transition-colors group"
+                >
+                  <div className="flex flex-col items-center">
+                    <Upload className="w-12 h-12 text-white/40 group-hover:text-white/60 mb-4" />
+                    <p className="text-white/60 mb-2">Click to upload receipt image</p>
+                    <p className="text-white/40 text-sm">PNG, JPG up to 10MB</p>
+                  </div>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative rounded-lg overflow-hidden">
+                  <img src={uploadedImage} alt="Receipt" className="w-full h-64 object-cover" />
+                  <button
+                    onClick={() => {
+                      setUploadedImage(null);
+                      setScanResult(null);
+                    }}
+                    className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-lg hover:bg-black/70 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                <button
+                  onClick={handleScanReceipt}
+                  disabled={isProcessing}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Scanning...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4" />
+                      Scan Receipt
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Results Section */}
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8">
+            <h3 className="text-xl font-semibold text-white mb-6">Scan Results</h3>
+            
+            {scanResult ? (
+              <div className="space-y-4">
+                <div className="bg-white/[0.05] rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-white/60 text-sm">Merchant</p>
+                      <p className="text-white font-medium">{scanResult.merchant}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-sm">Date</p>
+                      <p className="text-white font-medium">{scanResult.date}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-sm">Total</p>
+                      <p className="text-cyan-400 font-semibold text-lg">{scanResult.total}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-sm">Category</p>
+                      <p className="text-white font-medium">{scanResult.category}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-white/60 text-sm mb-2">Items</p>
+                    <div className="space-y-2">
+                      {scanResult.items.map((item: any, index: number) => (
+                        <div key={index} className="flex justify-between text-sm">
+                          <span className="text-white/80">{item.name}</span>
+                          <span className="text-white">{item.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <button className="w-full bg-white/[0.05] text-white py-2 rounded-lg hover:bg-white/[0.1] transition-colors">
+                  Save to Expenses
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <FileImage className="w-16 h-16 text-white/20 mx-auto mb-4" />
+                <p className="text-white/40">Upload and scan a receipt to see results</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

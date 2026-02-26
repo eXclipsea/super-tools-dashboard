@@ -22,12 +22,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for stored session on mount
-    const storedUser = localStorage.getItem('super-tools-user');
+    const storedUser = localStorage.getItem('super-tools-user') || sessionStorage.getItem('super-tools-user');
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         localStorage.removeItem('super-tools-user');
+        sessionStorage.removeItem('super-tools-user');
       }
     }
     setIsLoading(false);

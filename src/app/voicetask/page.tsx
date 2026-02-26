@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Mic, Square, Play, Trash2, CheckCircle, Clock, AlertTriangle, Sparkles, Save, List, Calendar, Settings, Download, X, ArrowLeft } from 'lucide-react';
+import { Mic, Square, Play, Trash2, CheckCircle, Clock, AlertTriangle, Sparkles, Save, List, Calendar, Settings, Download, X, ArrowLeft, Mail, Lock, Upload, User } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Task {
   id: string;
@@ -22,6 +23,12 @@ interface Recording {
 }
 
 export default function VoiceTask() {
+  const { user, login, logout, isLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [activeTab, setActiveTab] = useState<'record' | 'tasks' | 'recordings' | 'settings'>('record');
   const [isRecording, setIsRecording] = useState(false);
   const [recordings, setRecordings] = useState<Recording[]>([]);
@@ -31,6 +38,124 @@ export default function VoiceTask() {
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError('');
+    
+    const success = await login(email, password, rememberMe);
+    
+    if (!success) {
+      setLoginError('Invalid email or password');
+    }
+    
+    setIsLoggingIn(false);
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a mock recording from uploaded file
+      const newRecording: Recording = {
+        id: Date.now().toString(),
+        url: URL.createObjectURL(file),
+        createdAt: new Date().toISOString(),
+        duration: 0,
+      };
+      setRecordings(prev => [newRecording, ...prev]);
+      transcribeRecording(newRecording);
+    }
+  };
+
+  // If not logged in, show login form
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white/60">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Mic className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-2">VoiceTask</h2>
+            <p className="text-white/60">Sign in to access voice task management</p>
+          </div>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 bg-white/[0.05] border border-white/[0.1] rounded text-white focus:ring-white/20"
+              />
+              <label htmlFor="remember" className="ml-2 text-sm text-white/60">
+                Keep me signed in
+              </label>
+            </div>
+            
+            {loginError && (
+              <div className="text-red-400 text-sm">{loginError}</div>
+            )}
+            
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full bg-gradient-to-r from-violet-500 to-violet-600 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoggingIn ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <Link href="/" className="text-violet-400 hover:text-violet-300 text-sm transition-colors">
+              ← Back to Super Tools
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const startRecording = async () => {
     try {
@@ -143,6 +268,30 @@ export default function VoiceTask() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* User Header */}
+      <div className="bg-white/[0.02] border-b border-white/[0.04] px-6 py-3">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-violet-400 hover:text-violet-300 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-violet-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {user.email.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="text-white/80 text-sm">{user.email}</span>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
       {/* Download Popup */}
       {showBanner && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-violet-500/10 backdrop-blur-xl border-b border-violet-400/20">
@@ -227,9 +376,33 @@ export default function VoiceTask() {
                   </button>
                 </div>
 
-                <p className="text-neutral-600 text-sm">
+                <p className="text-neutral-600 text-sm mb-4">
                   {isRecording ? 'Recording... Click to stop' : 'Click to start recording'}
                 </p>
+
+                <div className="text-center mb-6">
+                  <p className="text-neutral-500 text-sm mb-2">OR</p>
+                </div>
+
+                {/* Upload Button */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleAudioUpload}
+                  className="hidden"
+                />
+                
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-white/[0.2] rounded-xl p-4 hover:border-white/[0.4] transition-colors group"
+                >
+                  <div className="flex flex-col items-center">
+                    <Upload className="w-8 h-8 text-white/40 group-hover:text-white/60 mb-2" />
+                    <p className="text-white/60 text-sm">Upload audio file</p>
+                    <p className="text-white/40 text-xs">MP3, WAV, M4A up to 25MB</p>
+                  </div>
+                </button>
 
                 {transcribing && (
                   <div className="mt-6 flex items-center justify-center gap-2 text-violet-400">
