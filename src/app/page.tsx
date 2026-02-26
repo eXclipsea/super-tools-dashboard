@@ -15,16 +15,19 @@ import {
   Cpu,
   Apple,
   Check,
-  X
+  X,
+  Mail,
+  Lock,
+  LogOut
 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 const apps = [
   {
     name: 'QuickReceipt',
     tagline: 'Your receipts, organized.',
     description: 'Point your camera at any receipt. AI reads it, categorizes it, and tracks your spending — automatically.',
-    utility: 'Never lose receipts again. Track expenses instantly with AI-powered scanning.',
     icon: Receipt,
     color: '#22d3ee',
     gradient: 'from-cyan-500/20 to-cyan-500/5',
@@ -35,7 +38,6 @@ const apps = [
     name: 'Kitchen Commander',
     tagline: 'Cook smarter, waste less.',
     description: 'Snap a photo of your fridge. Get a full pantry inventory and recipe ideas based on what you already have.',
-    utility: 'Reduce food waste. Get recipes from what you have. Never wonder "what to cook" again.',
     icon: ChefHat,
     color: '#4ade80',
     gradient: 'from-green-500/20 to-green-500/5',
@@ -46,7 +48,6 @@ const apps = [
     name: 'PersonaSync',
     tagline: 'Write like you. Faster.',
     description: 'Learns your writing style from examples, then drafts replies that sound exactly like you wrote them.',
-    utility: 'Save hours on emails. AI writes in your voice. Perfect for professionals and creators.',
     icon: Users,
     color: '#fb7185',
     gradient: 'from-rose-500/20 to-rose-500/5',
@@ -57,7 +58,6 @@ const apps = [
     name: 'VoiceTask',
     tagline: 'Talk it out. Get it done.',
     description: 'Record a voice memo. AI turns it into organized, prioritized tasks with deadlines — no typing required.',
-    utility: 'Capture thoughts instantly. AI organizes your tasks. Perfect for busy professionals.',
     icon: Mic,
     color: '#a78bfa',
     gradient: 'from-violet-500/20 to-violet-500/5',
@@ -68,7 +68,6 @@ const apps = [
     name: 'Argument Settler',
     tagline: 'Settle it with facts.',
     description: 'Two sides enter, one verdict leaves. AI fact-checks both arguments and delivers a ruling with sources.',
-    utility: 'End debates with facts. AI researches both sides. Perfect for arguments and research.',
     icon: Scale,
     color: '#fb923c',
     gradient: 'from-orange-500/20 to-orange-500/5',
@@ -78,16 +77,38 @@ const apps = [
 ];
 
 export default function Dashboard() {
+  const { user, login, logout, isLoading } = useAuth();
   const [hoveredApp, setHoveredApp] = useState<string | null>(null);
   const [showDownloads, setShowDownloads] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Login form state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError('');
+    
+    const success = await login(email, password, rememberMe);
+    
+    if (!success) {
+      setLoginError('Invalid email or password');
+    }
+    
+    setIsLoggingIn(false);
+  };
 
   const handlePurchase = async () => {
     setIsProcessing(true);
@@ -144,6 +165,109 @@ export default function Dashboard() {
           </div>
         </div>
       </nav>
+
+      {/* Login Form */}
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-white/60">Loading...</div>
+        </div>
+      ) : !user ? (
+        <div className="flex items-center justify-center min-h-[60vh] px-6">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-2">Welcome to Super Tools</h2>
+              <p className="text-white/60">Sign in to access all 5 AI tools</p>
+            </div>
+            
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 bg-white/[0.05] border border-white/[0.1] rounded text-white focus:ring-white/20"
+                />
+                <label htmlFor="remember" className="ml-2 text-sm text-white/60">
+                  Keep me signed in
+                </label>
+              </div>
+              
+              {loginError && (
+                <div className="text-red-400 text-sm">{loginError}</div>
+              )}
+              
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full bg-gradient-to-r from-blue-500 to-violet-600 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoggingIn ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-sm text-white/40">
+                Any email and password combination will work for demo purposes
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* User Info Bar */}
+          <div className="bg-white/[0.02] border-b border-white/[0.04] px-6 py-3">
+            <div className="max-w-6xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {user.email.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-white/80 text-sm">{user.email}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          </div>
 
       {/* Hero */}
       <section className="relative overflow-hidden">
@@ -245,8 +369,7 @@ export default function Dashboard() {
                   </div>
                   
                   <h3 className="text-xl font-semibold mb-2">{app.name}</h3>
-                  <p className="text-sm text-white/60 mb-3">{app.tagline}</p>
-                  <p className="text-xs text-green-400 font-medium mb-3">{app.utility}</p>
+                  <p className="text-sm text-white/60 mb-4">{app.tagline}</p>
                   <p className="text-sm text-white/40 leading-relaxed">{app.description}</p>
                 </div>
               </Link>
@@ -316,24 +439,10 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
+        </>
+      )}
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.04]">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-              <Zap className="w-2.5 h-2.5 text-white" />
-            </div>
-            <span className="text-[13px] font-medium text-white/40">Super Tools</span>
-          </div>
-          <p className="text-white/20 text-[12px]">
-            Built by Landon Li
-          </p>
-        </div>
-      </footer>
-      </div>
-
-      {/* Purchase Modal */}
+      {/* Purchase Modal - Always Available */}
       {showPurchaseModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-8 max-w-md w-full">
