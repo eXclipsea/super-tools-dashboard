@@ -24,6 +24,7 @@ const apps = [
     name: 'QuickReceipt',
     tagline: 'Your receipts, organized.',
     description: 'Point your camera at any receipt. AI reads it, categorizes it, and tracks your spending — automatically.',
+    utility: 'Never lose receipts again. Track expenses instantly with AI-powered scanning.',
     icon: Receipt,
     color: '#22d3ee',
     gradient: 'from-cyan-500/20 to-cyan-500/5',
@@ -34,6 +35,7 @@ const apps = [
     name: 'Kitchen Commander',
     tagline: 'Cook smarter, waste less.',
     description: 'Snap a photo of your fridge. Get a full pantry inventory and recipe ideas based on what you already have.',
+    utility: 'Reduce food waste. Get recipes from what you have. Never wonder "what to cook" again.',
     icon: ChefHat,
     color: '#4ade80',
     gradient: 'from-green-500/20 to-green-500/5',
@@ -44,6 +46,7 @@ const apps = [
     name: 'PersonaSync',
     tagline: 'Write like you. Faster.',
     description: 'Learns your writing style from examples, then drafts replies that sound exactly like you wrote them.',
+    utility: 'Save hours on emails. AI writes in your voice. Perfect for professionals and creators.',
     icon: Users,
     color: '#fb7185',
     gradient: 'from-rose-500/20 to-rose-500/5',
@@ -54,6 +57,7 @@ const apps = [
     name: 'VoiceTask',
     tagline: 'Talk it out. Get it done.',
     description: 'Record a voice memo. AI turns it into organized, prioritized tasks with deadlines — no typing required.',
+    utility: 'Capture thoughts instantly. AI organizes your tasks. Perfect for busy professionals.',
     icon: Mic,
     color: '#a78bfa',
     gradient: 'from-violet-500/20 to-violet-500/5',
@@ -64,6 +68,7 @@ const apps = [
     name: 'Argument Settler',
     tagline: 'Settle it with facts.',
     description: 'Two sides enter, one verdict leaves. AI fact-checks both arguments and delivers a ruling with sources.',
+    utility: 'End debates with facts. AI researches both sides. Perfect for arguments and research.',
     icon: Scale,
     color: '#fb923c',
     gradient: 'from-orange-500/20 to-orange-500/5',
@@ -240,7 +245,8 @@ export default function Dashboard() {
                   </div>
                   
                   <h3 className="text-xl font-semibold mb-2">{app.name}</h3>
-                  <p className="text-sm text-white/60 mb-4">{app.tagline}</p>
+                  <p className="text-sm text-white/60 mb-3">{app.tagline}</p>
+                  <p className="text-xs text-green-400 font-medium mb-3">{app.utility}</p>
                   <p className="text-sm text-white/40 leading-relaxed">{app.description}</p>
                 </div>
               </Link>
