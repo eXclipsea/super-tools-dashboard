@@ -41,6 +41,8 @@ export default function PersonaSync() {
   const [messageHistory, setMessageHistory] = useState<HistoryEntry[]>([]);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [parsingImage, setParsingImage] = useState(false);
+  const [screenshotNotice, setScreenshotNotice] = useState('');
+  const [loadingStep, setLoadingStep] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +50,7 @@ export default function PersonaSync() {
     if (!file) return;
 
     setParsingImage(true);
+    setScreenshotNotice('');
     const reader = new FileReader();
     reader.onload = async (event) => {
       const dataUrl = event.target?.result as string;
@@ -60,9 +63,20 @@ export default function PersonaSync() {
           body: JSON.stringify({ image: dataUrl }),
         });
         const data = await res.json();
-        if (data.text) setExamples(data.text);
-      } catch (err) {
+        if (data.error) throw new Error(data.error);
+
+        if (data.hasText && data.text) {
+          setExamples(data.text);
+        } else {
+          setScreenshotNotice(
+            data.reason
+              ? `AI couldn't extract text: ${data.reason}`
+              : 'No readable message text found. Try a screenshot of iMessage, Gmail, or any chat app where the text is clearly visible.'
+          );
+        }
+      } catch (err: any) {
         console.error('Screenshot parse error:', err);
+        setScreenshotNotice(err.message || 'Failed to read screenshot. Please try again or paste your text manually.');
       } finally {
         setParsingImage(false);
       }
@@ -74,6 +88,8 @@ export default function PersonaSync() {
     if (!examples) return;
 
     setLoading(true);
+    setLoadingStep('Sending examples to GPT-4o...');
+    const t1 = setTimeout(() => setLoadingStep('Analyzing writing patterns...'), 2000);
     try {
       const res = await fetch('/api/personasync/analyze-style', {
         method: 'POST',
@@ -87,7 +103,9 @@ export default function PersonaSync() {
     } catch (err) {
       console.error('Analyze style error:', err);
     } finally {
+      clearTimeout(t1);
       setLoading(false);
+      setLoadingStep('');
     }
   };
 
@@ -242,7 +260,13 @@ export default function PersonaSync() {
                       {parsingImage && (
                         <div className="flex items-center gap-2 text-rose-400 mt-2">
                           <div className="w-4 h-4 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
-                          <span className="text-sm">Parsing text from image...</span>
+                          <span className="text-sm">Reading text from screenshot with GPT-4o...</span>
+                        </div>
+                      )}
+                      {screenshotNotice && !parsingImage && (
+                        <div className="mt-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                          <p className="text-amber-400 text-sm font-medium">⚠ AI couldn't read this screenshot</p>
+                          <p className="text-amber-300 text-sm mt-1">{screenshotNotice}</p>
                         </div>
                       )}
                     </div>
@@ -266,7 +290,7 @@ Example 3: lol that's hilarious..."
                   className="w-full bg-rose-500 hover:bg-rose-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                  {loading ? 'Analyzing...' : 'Create Style Profile'}
+                  {loading ? (loadingStep || 'Analyzing...') : 'Create Style Profile'}
                 </button>
               </div>
             )}

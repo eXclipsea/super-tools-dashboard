@@ -30,6 +30,8 @@ export default function VoiceTask() {
   const [transcribing, setTranscribing] = useState(false);
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
   const [transcribeError, setTranscribeError] = useState('');
+  const [transcribeNotice, setTranscribeNotice] = useState('');
+  const [loadingStep, setLoadingStep] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioBlobRef = useRef<Blob | null>(null);
@@ -81,6 +83,12 @@ export default function VoiceTask() {
   const transcribeRecording = async (recording: Recording, blob: Blob) => {
     setTranscribing(true);
     setTranscribeError('');
+    setTranscribeNotice('');
+
+    setLoadingStep('Sending audio to Whisper...');
+    const t1 = setTimeout(() => setLoadingStep('Transcribing speech...'), 2000);
+    const t2 = setTimeout(() => setLoadingStep('Extracting tasks with GPT-4o...'), 4000);
+
     try {
       const formData = new FormData();
       formData.append('audio', new File([blob], 'recording.webm', { type: 'audio/webm' }));
@@ -92,7 +100,18 @@ export default function VoiceTask() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      const { transcript, tasks: parsedTasks } = data;
+      const { transcript, tasks: parsedTasks, aiMessage } = data;
+
+      // Always save the transcript to the recording so user can see what was heard
+      if (transcript) {
+        setRecordings(prev => prev.map(r =>
+          r.id === recording.id ? { ...r, transcript } : r
+        ));
+      }
+
+      if (aiMessage) {
+        setTranscribeNotice(aiMessage);
+      }
 
       const newTasks: Task[] = (parsedTasks || []).map((t: Omit<Task, 'id' | 'createdAt'>, idx: number) => ({
         ...t,
@@ -101,18 +120,18 @@ export default function VoiceTask() {
         dueDate: t.dueDate || undefined,
       }));
 
-      setTasks(prev => [...newTasks, ...prev]);
-
-      if (transcript) {
-        setRecordings(prev => prev.map(r =>
-          r.id === recording.id ? { ...r, transcript } : r
-        ));
+      if (newTasks.length > 0) {
+        setTasks(prev => [...newTasks, ...prev]);
+        setActiveTab('tasks');
       }
     } catch (err: any) {
       console.error('Transcribe error:', err);
       setTranscribeError(err.message || 'Failed to transcribe. Please try again.');
     } finally {
+      clearTimeout(t1);
+      clearTimeout(t2);
       setTranscribing(false);
+      setLoadingStep('');
     }
   };
 
@@ -231,9 +250,20 @@ export default function VoiceTask() {
                 </p>
 
                 {transcribing && (
-                  <div className="mt-6 flex items-center justify-center gap-2 text-violet-400">
-                    <div className="w-4 h-4 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm">Transcribing with AI...</span>
+                  <div className="mt-6 space-y-1 text-center">
+                    <div className="flex items-center justify-center gap-2 text-violet-400">
+                      <div className="w-4 h-4 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm">{loadingStep || 'Processing...'}</span>
+                    </div>
+                    <p className="text-xs text-neutral-600">This may take a few seconds</p>
+                  </div>
+                )}
+
+                {transcribeNotice && !transcribing && (
+                  <div className="mt-4 text-left bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3">
+                    <p className="text-amber-400 text-sm font-medium mb-1">⚠ Notice from AI</p>
+                    <p className="text-amber-300 text-sm">{transcribeNotice}</p>
+                    <p className="text-amber-600 text-xs mt-1">Check the Recordings tab to see the full transcript.</p>
                   </div>
                 )}
 

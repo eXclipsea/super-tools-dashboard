@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
     }
 
-    // Transcribe with Whisper
+    // Step 1: Transcribe with Whisper
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: 'whisper-1',
@@ -22,21 +22,34 @@ export async function POST(request: NextRequest) {
     const transcript = typeof transcription === 'string' ? transcription : (transcription as any).text || '';
 
     if (!transcript.trim()) {
-      return NextResponse.json({ transcript: '', tasks: [] });
+      return NextResponse.json({
+        transcript: '',
+        tasks: [],
+        aiMessage: "Whisper didn't detect any speech in this recording. Make sure your microphone is working and you're speaking clearly. Background noise can sometimes cause this.",
+      });
     }
 
-    // Parse tasks from transcript with GPT-4o
+    // Step 2: Parse tasks from transcript with GPT-4o
     const today = new Date().toISOString().split('T')[0];
     const tasksResponse = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
           role: 'system',
-          content: `Today is ${today}. Extract actionable tasks from voice transcripts. Be smart about urgency and priority. Return valid JSON only.`,
+          content: `Today is ${today}. You extract actionable tasks from voice transcripts. Be smart about urgency and priority. Return valid JSON only.`,
         },
         {
           role: 'user',
-          content: `Extract all tasks from this transcript:\n\n"${transcript}"\n\nFor each task identify urgency and priority. Return JSON: {"tasks": [{"text": "task description", "category": "urgent|later", "priority": "high|medium|low", "dueDate": "YYYY-MM-DD or null"}]}`,
+          content: `Transcript: "${transcript}"
+
+Extract every actionable task from this. A task is something that needs to be done (call someone, buy something, schedule something, complete something, etc).
+
+Return JSON:
+{
+  "tasks": [{"text": "clear task description", "category": "urgent|later", "priority": "high|medium|low", "dueDate": "YYYY-MM-DD or null"}],
+  "foundTasks": true or false,
+  "reason": "brief note about what you found or why no tasks were detected"
+}`,
         },
       ],
       response_format: { type: 'json_object' },
@@ -46,9 +59,15 @@ export async function POST(request: NextRequest) {
     const parsed = JSON.parse(tasksResponse.choices[0].message.content!);
     const tasks = parsed.tasks || [];
 
-    return NextResponse.json({ transcript, tasks });
-  } catch (error) {
+    let aiMessage: string | undefined;
+    if (tasks.length === 0) {
+      aiMessage = `Whisper heard: "${transcript}" — but no actionable tasks were found. Try phrases like "Call John by Friday", "Buy groceries tomorrow", or "Submit the report next week".`;
+    }
+
+    return NextResponse.json({ transcript, tasks, aiMessage });
+  } catch (error: any) {
     console.error('VoiceTask transcribe error:', error);
-    return NextResponse.json({ error: 'Failed to transcribe audio' }, { status: 500 });
+    const message = error?.message || 'Failed to transcribe audio';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -23,18 +23,33 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'text',
-              text: 'Extract all the message or email text from this screenshot. Return only the raw text content of the messages, preserving line breaks between separate messages. Do not include any UI elements, timestamps, sender names, or other metadata — just the message body text.',
+              text: `Look at this screenshot and extract any message, email, or conversation text from it.
+
+Return JSON:
+{
+  "hasText": true or false,
+  "reason": "brief note about what you see (e.g. 'Found 3 iMessage conversations', 'Image appears to be a photo, not a screenshot with text')",
+  "text": "the extracted message text, preserving line breaks between separate messages"
+}
+
+If there is no readable text (photo, blurry, wrong content), set hasText to false and explain in reason. Only return JSON.`,
             },
           ],
         },
       ],
+      response_format: { type: 'json_object' },
       max_tokens: 1000,
     });
 
-    const text = response.choices[0].message.content || '';
-    return NextResponse.json({ text });
-  } catch (error) {
+    const result = JSON.parse(response.choices[0].message.content!);
+
+    return NextResponse.json({
+      hasText: result.hasText ?? !!result.text,
+      reason: result.reason || '',
+      text: result.text || '',
+    });
+  } catch (error: any) {
     console.error('PersonaSync parse-screenshot error:', error);
-    return NextResponse.json({ error: 'Failed to parse screenshot' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Failed to parse screenshot' }, { status: 500 });
   }
 }

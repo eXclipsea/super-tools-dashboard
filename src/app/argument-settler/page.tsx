@@ -36,7 +36,9 @@ export default function ArgumentSettler() {
   const [copied, setCopied] = useState(false);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [parsingImage, setParsingImage] = useState(false);
+  const [parseNotice, setParseNotice] = useState('');
   const [error, setError] = useState('');
+  const [loadingStep, setLoadingStep] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,6 +75,9 @@ export default function ArgumentSettler() {
     setLoading(true);
     setError('');
     setVerdict(null);
+    setLoadingStep('Sending claims to GPT-4o...');
+    const t1 = setTimeout(() => setLoadingStep('Fact-checking both sides...'), 2000);
+    const t2 = setTimeout(() => setLoadingStep('Weighing the evidence...'), 4000);
     try {
       const res = await fetch('/api/argument-settler/settle', {
         method: 'POST',
@@ -99,7 +104,10 @@ export default function ArgumentSettler() {
       console.error('Settle error:', err);
       setError(err.message || 'Failed to settle argument. Please try again.');
     } finally {
+      clearTimeout(t1);
+      clearTimeout(t2);
       setLoading(false);
+      setLoadingStep('');
     }
   };
 
@@ -244,7 +252,7 @@ export default function ArgumentSettler() {
                   {loading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Researching...
+                      {loadingStep || 'Researching...'}
                     </>
                   ) : (
                     <>
@@ -309,6 +317,12 @@ export default function ArgumentSettler() {
                   <h4 className="font-medium mb-2">Reasoning</h4>
                   <p className="text-neutral-300">{verdict.reasoning}</p>
                 </div>
+
+                {(verdict as any).analysisNote && (
+                  <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <p className="text-amber-400 text-sm">⚠ {(verdict as any).analysisNote}</p>
+                  </div>
+                )}
 
                 {verdict.roast && (
                   <div className="mb-4 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">

@@ -44,6 +44,7 @@ export default function QuickReceipt() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [scanError, setScanError] = useState('');
+  const [loadingStep, setLoadingStep] = useState('');
   const [activeTab, setActiveTab] = useState<'scan' | 'history' | 'summary'>('scan');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -129,6 +130,9 @@ export default function QuickReceipt() {
     if (!selectedImage) return;
     setIsAnalyzing(true);
     setScanError('');
+    setLoadingStep('Sending image to GPT-4o...');
+    const t1 = setTimeout(() => setLoadingStep('Reading receipt details...'), 1800);
+    const t2 = setTimeout(() => setLoadingStep('Extracting line items...'), 3500);
 
     try {
       const res = await fetch('/api/quickreceipt/analyze', {
@@ -160,7 +164,10 @@ export default function QuickReceipt() {
     } catch (err: any) {
       setScanError(err.message || 'Failed to analyze receipt. Please try again.');
     } finally {
+      clearTimeout(t1);
+      clearTimeout(t2);
       setIsAnalyzing(false);
+      setLoadingStep('');
     }
   };
 
@@ -440,7 +447,7 @@ export default function QuickReceipt() {
                 {isAnalyzing ? (
                   <>
                     <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    Analyzing receipt...
+                    {loadingStep || 'Analyzing receipt...'}
                   </>
                 ) : (
                   <>

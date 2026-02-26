@@ -41,6 +41,8 @@ export default function KitchenCommander() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [isGeneratingRecipes, setIsGeneratingRecipes] = useState(false);
   const [analyzeError, setAnalyzeError] = useState('');
+  const [analyzeNotice, setAnalyzeNotice] = useState('');
+  const [loadingStep, setLoadingStep] = useState('');
   const [recipeError, setRecipeError] = useState('');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +61,13 @@ export default function KitchenCommander() {
 
     setIsAnalyzing(true);
     setAnalyzeError('');
+    setAnalyzeNotice('');
+
+    // Show progressive loading steps while waiting
+    setLoadingStep('Sending image to GPT-4o...');
+    const t1 = setTimeout(() => setLoadingStep('Scanning for food items...'), 1800);
+    const t2 = setTimeout(() => setLoadingStep('Estimating quantities and expiry dates...'), 3500);
+
     try {
       const res = await fetch('/api/kitchen-commander/analyze', {
         method: 'POST',
@@ -67,6 +76,16 @@ export default function KitchenCommander() {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+
+      if (!data.canDetect || (data.items || []).length === 0) {
+        setAnalyzeNotice(
+          data.reason
+            ? `AI couldn't identify food items: ${data.reason}`
+            : 'No food items detected. Try a clearer, well-lit photo directly facing your fridge or pantry.'
+        );
+        return;
+      }
+
       const newItems: PantryItem[] = (data.items || []).map((item: Omit<PantryItem, 'id' | 'isOpened' | 'addedDate'>) => ({
         ...item,
         id: `${Date.now()}-${Math.random()}`,
@@ -74,11 +93,15 @@ export default function KitchenCommander() {
         addedDate: new Date().toISOString(),
       }));
       setPantryItems(prev => [...prev, ...newItems]);
+      setActiveTab('pantry');
     } catch (err: any) {
       console.error('Analyze error:', err);
       setAnalyzeError(err.message || 'Failed to analyze image. Please try again.');
     } finally {
+      clearTimeout(t1);
+      clearTimeout(t2);
       setIsAnalyzing(false);
+      setLoadingStep('');
     }
   };
 
@@ -244,9 +267,12 @@ export default function KitchenCommander() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">AI Analysis</h3>
                 {isAnalyzing ? (
-                  <div className="flex items-center gap-3 text-green-400">
-                    <div className="w-5 h-5 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
-                    <span>Analyzing your items...</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 text-green-400">
+                      <div className="w-5 h-5 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm">{loadingStep || 'Analyzing...'}</span>
+                    </div>
+                    <p className="text-xs text-neutral-600">This may take 5–10 seconds</p>
                   </div>
                 ) : selectedImage ? (
                   <div className="space-y-4">
@@ -259,6 +285,16 @@ export default function KitchenCommander() {
                     <p className="text-sm text-neutral-500">
                       AI will identify items, quantities, and suggest expiry dates
                     </p>
+                    {analyzeNotice && (
+                      <div className="flex items-start gap-2 text-amber-400 text-sm bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 mt-2">
+                        <span className="shrink-0 mt-0.5">⚠</span>
+                        <div>
+                          <p className="font-medium mb-1">AI couldn't detect items</p>
+                          <p>{analyzeNotice}</p>
+                          <p className="text-amber-600 mt-1 text-xs">Tips: good lighting, photo facing into the fridge, avoid glare</p>
+                        </div>
+                      </div>
+                    )}
                     {analyzeError && (
                       <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">
                         <AlertCircle className="w-4 h-4 shrink-0" />
