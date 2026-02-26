@@ -155,9 +155,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-500/30">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/70 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
@@ -166,12 +166,12 @@ export default function Dashboard() {
             <span className="font-semibold text-[15px] tracking-tight">Super Tools</span>
           </div>
           <div className="flex items-center gap-4">
-            <a href="#apps" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors">Apps</a>
-            <a href="#download" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors">Download</a>
+            <a href="#apps" className="text-[13px] text-white/60 hover:text-white transition-colors">Apps</a>
+            <a href="#download" className="text-[13px] text-white/60 hover:text-white transition-colors">Download</a>
             {!user ? (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="text-[13px] font-medium bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition-colors"
+                className="text-[13px] font-medium bg-white text-black px-4 py-1.5 rounded-full hover:bg-white/80 transition-colors"
               >
                 Sign In
               </button>
@@ -184,7 +184,7 @@ export default function Dashboard() {
                 </div>
                 <button
                   onClick={logout}
-                  className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-[13px] text-white/60 hover:text-white transition-colors"
                 >
                   Sign Out
                 </button>
@@ -197,12 +197,12 @@ export default function Dashboard() {
       {/* Login Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8">
+          <div className="w-full max-w-md bg-[#0f0f0f] border border-white/10 rounded-2xl p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
+              <h2 className="text-2xl font-bold">Sign In</h2>
               <button
                 onClick={() => setShowLoginModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-white/40 hover:text-white/70 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -210,14 +210,14 @@ export default function Dashboard() {
             
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-black border border-white/15 rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
                     placeholder="Enter your email"
                     required
                   />
@@ -225,14 +225,14 @@ export default function Dashboard() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-black border border-white/15 rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
                     placeholder="Enter your password"
                     required
                   />
@@ -245,15 +245,15 @@ export default function Dashboard() {
                   id="remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 bg-gray-50 border border-gray-300 rounded text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 bg-black border border-white/20 rounded text-blue-400 focus:ring-blue-500"
                 />
-                <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
+                <label htmlFor="remember" className="ml-2 text-sm text-white/60">
                   Keep me signed in
                 </label>
               </div>
               
               {loginError && (
-                <div className="text-red-500 text-sm">{loginError}</div>
+                <div className="text-red-400 text-sm">{loginError}</div>
               )}
               
               <button
@@ -266,7 +266,7 @@ export default function Dashboard() {
             </form>
             
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-white/50">
                 Any email and password combination will work for demo purposes
               </p>
             </div>
@@ -315,7 +315,7 @@ export default function Dashboard() {
       </section>
 
       {/* Stats bar */}
-      <section className="border-y border-white/[0.04] bg-white/[0.015]">
+      <section className="border-y border-white/[0.08] bg-white/[0.02]">
         <div className="max-w-6xl mx-auto px-6 py-6 grid grid-cols-3 gap-8">
           {[
             { icon: Cpu, label: 'Powered by GPT-4o', sub: 'Latest AI models' },
