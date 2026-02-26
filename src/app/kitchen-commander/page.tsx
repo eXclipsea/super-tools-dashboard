@@ -82,16 +82,40 @@ export default function KitchenCommander() {
     if (!selectedImage) return;
     
     setIsAnalyzing(true);
-    // Simulate API call
-    setTimeout(() => {
-      const newItems: PantryItem[] = [
-        { id: '1', name: 'Milk', quantity: '1 gallon', expiryDate: '2024-03-15', isOpened: false, addedDate: new Date().toISOString(), category: 'Dairy' },
-        { id: '2', name: 'Eggs', quantity: '12 count', expiryDate: '2024-03-20', isOpened: false, addedDate: new Date().toISOString(), category: 'Dairy' },
-        { id: '3', name: 'Bread', quantity: '1 loaf', expiryDate: '2024-03-10', isOpened: false, addedDate: new Date().toISOString(), category: 'Pantry' },
-      ];
-      setPantryItems(prev => [...prev, ...newItems]);
+    try {
+      const response = await fetch('/api/analyze-pantry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageData: selectedImage
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error('API Error:', data.error);
+        alert('Failed to analyze image: ' + data.error);
+      } else {
+        const newItems: PantryItem[] = data.items.map((item: any, index: number) => ({
+          id: `pantry-${Date.now()}-${index}`,
+          name: item.name,
+          quantity: item.quantity,
+          expiryDate: item.expiryDate,
+          isOpened: item.isOpened || false,
+          addedDate: new Date().toISOString(),
+          category: item.category
+        }));
+        setPantryItems(prev => [...prev, ...newItems]);
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      alert('Failed to analyze image. Please try again.');
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
+    }
   };
 
   const generateRecipes = async () => {

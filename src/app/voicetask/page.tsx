@@ -200,32 +200,53 @@ export default function VoiceTask() {
 
   const transcribeRecording = async (recording: Recording) => {
     setTranscribing(true);
-    // Simulate API call - only generate tasks if there's actual audio
-    setTimeout(() => {
-      // Only generate transcript if recording has actual audio (not empty)
-      if (recording.url && recording.url !== 'mock-audio-data') {
-        const transcript = "This is a sample transcript from your audio recording. Call Sarah back about the project proposal by Friday. Review the budget spreadsheet and send feedback to the team.";
-        
-        // Parse tasks from transcript
-        const taskTexts = transcript.split('.').filter(t => t.trim());
-        const newTasks: Task[] = taskTexts.map((text, idx) => ({
-          id: `task-${Date.now()}-${idx}`,
-          text: text.trim(),
-          category: idx === 0 ? 'urgent' : idx === 1 ? 'urgent' : 'later',
-          createdAt: new Date().toISOString(),
-          priority: idx === 0 ? 'high' : idx === 1 ? 'medium' : 'low',
-          dueDate: idx === 0 ? getNextFriday() : idx === 3 ? getNextTuesday() : undefined,
-        }));
+    try {
+      // Convert blob URL to file
+      const response = await fetch(recording.url);
+      const blob = await response.blob();
+      const formData = new FormData();
+      formData.append('audio', blob, 'recording.webm');
 
-        setTasks(prev => [...newTasks, ...prev]);
-        
-        setRecordings(prev => prev.map(r => 
-          r.id === recording.id ? { ...r, transcript } : r
-        ));
-      }
+      const apiResponse = await fetch('/api/transcribe-audio', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await apiResponse.json();
       
+      if (data.error) {
+        console.error('API Error:', data.error);
+        alert('Failed to transcribe audio: ' + data.error);
+      } else if (data.transcript) {
+        // Update recording with transcript
+        setRecordings(prev => prev.map(r => 
+          r.id === recording.id ? { ...r, transcript: data.transcript } : r
+        ));
+
+        // Add tasks if any were extracted
+        if (data.tasks && data.tasks.length > 0) {
+          const newTasks: Task[] = data.tasks.map((task: any, idx: number) => ({
+            id: `task-${Date.now()}-${idx}`,
+            text: task.text,
+            category: task.category || 'later',
+            createdAt: new Date().toISOString(),
+            priority: task.priority || 'medium',
+            dueDate: task.dueDate,
+          }));
+
+          setTasks(prev => [...newTasks, ...prev]);
+        } else {
+          alert('No tasks found in the audio. Try speaking more clearly about specific tasks.');
+        }
+      } else {
+        alert('No speech detected in the audio. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error transcribing audio:', error);
+      alert('Failed to transcribe audio. Please try again.');
+    } finally {
       setTranscribing(false);
-    }, 2000);
+    }
   };
 
   const getNextFriday = () => {

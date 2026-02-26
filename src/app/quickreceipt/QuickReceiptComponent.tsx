@@ -77,21 +77,31 @@ export default function QuickReceiptComponent() {
     if (!uploadedImage) return;
     
     setIsProcessing(true);
-    // Simulate AI processing
-    setTimeout(() => {
-      setScanResult({
-        merchant: 'Coffee Shop',
-        date: '2024-02-25',
-        total: '$12.50',
-        category: 'Food & Dining',
-        items: [
-          { name: 'Latte', price: '$5.50' },
-          { name: 'Croissant', price: '$4.00' },
-          { name: 'Tax', price: '$3.00' }
-        ]
+    try {
+      const response = await fetch('/api/scan-receipt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageData: uploadedImage
+        })
       });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error('API Error:', data.error);
+        alert('Failed to scan receipt: ' + data.error);
+      } else {
+        setScanResult(data);
+      }
+    } catch (error) {
+      console.error('Error scanning receipt:', error);
+      alert('Failed to scan receipt. Please try again.');
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+    }
   };
 
   // If not logged in, show login form
