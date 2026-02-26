@@ -99,7 +99,7 @@ export default function VoiceTask() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
                   placeholder="Enter your email"
                   required
                 />
@@ -114,7 +114,7 @@ export default function VoiceTask() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
                   placeholder="Enter your password"
                   required
                 />
@@ -127,7 +127,7 @@ export default function VoiceTask() {
                 id="remember"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 bg-white/[0.05] border border-white/[0.1] rounded text-white focus:ring-white/20"
+                className="w-4 h-4 bg-black border border-white/[0.1] rounded text-white focus:ring-white/20"
               />
               <label htmlFor="remember" className="ml-2 text-sm text-white/60">
                 Keep me signed in

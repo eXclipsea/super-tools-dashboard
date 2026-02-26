@@ -134,7 +134,7 @@ export default function QuickReceiptComponent() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
                   placeholder="Enter your email"
                   required
                 />
@@ -149,7 +149,7 @@ export default function QuickReceiptComponent() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
                   placeholder="Enter your password"
                   required
                 />
@@ -162,7 +162,7 @@ export default function QuickReceiptComponent() {
                 id="remember"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 bg-white/[0.05] border border-white/[0.1] rounded text-white focus:ring-white/20"
+                className="w-4 h-4 bg-black border border-white/[0.1] rounded text-white focus:ring-white/20"
               />
               <label htmlFor="remember" className="ml-2 text-sm text-white/60">
                 Keep me signed in
@@ -196,7 +196,7 @@ export default function QuickReceiptComponent() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="bg-white/[0.02] border-b border-white/[0.04] px-6 py-3">
+      <div className="bg-black border-b border-white/[0.04] px-6 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition-colors">
@@ -254,7 +254,7 @@ export default function QuickReceiptComponent() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Upload Section */}
-          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8">
+          <div className="bg-black border border-white/[0.06] rounded-2xl p-8">
             <h3 className="text-xl font-semibold text-white mb-6">Upload Receipt</h3>
             
             {!uploadedImage ? (
@@ -323,12 +323,12 @@ export default function QuickReceiptComponent() {
           </div>
 
           {/* Results Section */}
-          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8">
+          <div className="bg-black border border-white/[0.06] rounded-2xl p-8">
             <h3 className="text-xl font-semibold text-white mb-6">Scan Results</h3>
             
             {scanResult ? (
               <div className="space-y-4">
-                <div className="bg-white/[0.05] rounded-lg p-4">
+                <div className="bg-black rounded-lg p-4">
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-white/60 text-sm">Merchant</p>
@@ -361,7 +361,7 @@ export default function QuickReceiptComponent() {
                   </div>
                 </div>
                 
-                <button className="w-full bg-white/[0.05] text-white py-2 rounded-lg hover:bg-white/[0.1] transition-colors">
+                <button className="w-full bg-black text-white py-2 rounded-lg hover:bg-white/[0.1] transition-colors">
                   Save to Expenses
                 </button>
               </div>
