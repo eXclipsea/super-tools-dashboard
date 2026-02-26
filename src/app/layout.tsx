@@ -20,6 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         {children}
+        <script async src="https://js.stripe.com/v3/" />
       </body>
     </html>
   );
