@@ -408,6 +408,42 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+      
+      <Footer />
     </div>
+  );
+}
+
+// Footer component
+function Footer() {
+  return (
+    <footer className="border-t border-white/[0.04] py-8">
+      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+            <Zap className="w-2.5 h-2.5 text-white" />
+          </div>
+          <span className="text-[13px] font-medium text-white/40">Super Tools</span>
+        </div>
+        
+        <div className="flex items-center gap-6 text-[12px]">
+          <a 
+            href="/privacy" 
+            className="text-white/20 hover:text-white/40 transition-colors"
+          >
+            Privacy Policy
+          </a>
+          <a 
+            href="/terms" 
+            className="text-white/20 hover:text-white/40 transition-colors"
+          >
+            Terms of Service
+          </a>
+          <span className="text-white/20">
+            Built by Landon Li
+          </span>
+        </div>
+      </div>
+    </footer>
   );
 }
