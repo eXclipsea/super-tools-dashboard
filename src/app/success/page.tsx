@@ -1,50 +1,71 @@
 'use client';
 
-import { Download, LayoutGrid, Check } from 'lucide-react';
-
-const downloads = [
-  { name: 'Super Tools (All-in-One)', url: 'https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg' },
-  { name: 'Kitchen Commander', url: 'https://github.com/eXclipsea/kitchen-commander/releases/download/v0.1.0/KitchenCommander_0.1.0_aarch64.dmg' },
-  { name: 'PersonaSync', url: 'https://github.com/eXclipsea/persona-drafter/releases/download/v0.1.0/PersonaSync_0.1.0_aarch64.dmg' },
-  { name: 'Argument Settler', url: 'https://github.com/eXclipsea/neutral-ref/releases/download/v0.1.0/ArgumentSettler_0.1.0_aarch64.dmg' },
-  { name: 'VoiceTask', url: 'https://github.com/eXclipsea/voice-task/releases/download/v0.1.0/VoiceTask_0.1.0_aarch64.dmg' },
-  { name: 'QuickReceipt', url: 'https://github.com/eXclipsea/QuickReceipt/releases/download/v0.1.0/QuickReceipt_0.1.0_aarch64.dmg' },
-];
+import { useEffect, useState } from 'react';
+import { Download, Check, Home } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SuccessPage() {
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('session_id');
+    setSessionId(id);
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-2xl mx-auto px-6 py-16">
         <div className="mb-12 text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-full border-2 border-green-400 flex items-center justify-center">
-              <Check className="w-6 h-6 text-green-400" />
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
+              <Check className="w-8 h-8 text-green-400" />
             </div>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Thank you!</h1>
-          <p className="text-neutral-500">Your support means a lot. Download your Mac apps below.</p>
+          <h1 className="text-3xl font-semibold tracking-tight mb-2">Payment Successful!</h1>
+          <p className="text-neutral-500">Thank you for purchasing Super Tools Dashboard. Your download is ready.</p>
         </div>
 
-        <div className="space-y-3">
-          {downloads.map((app) => (
-            <a
-              key={app.name}
-              href={app.url}
-              className="flex items-center justify-between p-4 rounded-xl border border-neutral-800 hover:bg-neutral-950 transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <Download className="w-4 h-4 text-indigo-400" />
-                <span className="text-sm font-medium">{app.name}</span>
-              </div>
-              <span className="text-xs text-neutral-600 group-hover:text-neutral-400 transition-colors">.dmg</span>
-            </a>
-          ))}
-        </div>
-
-        <div className="mt-10 text-center">
-          <a href="/" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-            ← Back to Dashboard
+        <div className="bg-neutral-900 rounded-xl p-8 border border-neutral-800 mb-8">
+          <h3 className="font-semibold text-lg mb-6 text-center">Download Super Tools Dashboard</h3>
+          <a
+            href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 text-lg"
+          >
+            <Download className="w-6 h-6" />
+            Download for Mac
           </a>
+          <p className="text-xs text-neutral-500 mt-4 text-center">
+            Session ID: {sessionId || 'N/A'}
+          </p>
+          <div className="mt-6 text-sm text-neutral-400 text-center">
+            <p>All 5 AI-powered tools in one native macOS app</p>
+            <p>Free lifetime updates • No subscription</p>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+        </div>
+
+        <div className="mt-8 text-center text-sm text-neutral-500">
+          <p>Need help? Contact support@supertoolz.xyz</p>
         </div>
       </div>
     </div>

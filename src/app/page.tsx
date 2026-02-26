@@ -8,14 +8,16 @@ import {
   Mic, 
   Scale,
   ArrowRight,
-  ArrowLeft,
   ArrowUpRight,
   Download,
   Zap,
   Shield,
   Cpu,
-  Apple
+  Apple,
+  Check,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
 
 const apps = [
   {
@@ -25,7 +27,7 @@ const apps = [
     icon: Receipt,
     color: '#22d3ee',
     gradient: 'from-cyan-500/20 to-cyan-500/5',
-    url: 'https://windsurf-project-2-one.vercel.app',
+    route: '/quickreceipt',
     dmg: 'https://github.com/eXclipsea/QuickReceipt/releases/download/v0.1.0/QuickReceipt_0.1.0_aarch64.dmg',
   },
   {
@@ -35,7 +37,7 @@ const apps = [
     icon: ChefHat,
     color: '#4ade80',
     gradient: 'from-green-500/20 to-green-500/5',
-    url: 'https://kitchen-commander.vercel.app',
+    route: '/kitchen-commander',
     dmg: 'https://github.com/eXclipsea/kitchen-commander/releases/download/v0.1.0/KitchenCommander_0.1.0_aarch64.dmg',
   },
   {
@@ -45,7 +47,7 @@ const apps = [
     icon: Users,
     color: '#fb7185',
     gradient: 'from-rose-500/20 to-rose-500/5',
-    url: 'https://personasync-flax.vercel.app',
+    route: '/personasync',
     dmg: 'https://github.com/eXclipsea/persona-drafter/releases/download/v0.1.0/PersonaSync_0.1.0_aarch64.dmg',
   },
   {
@@ -55,7 +57,7 @@ const apps = [
     icon: Mic,
     color: '#a78bfa',
     gradient: 'from-violet-500/20 to-violet-500/5',
-    url: 'https://voicetask-phi.vercel.app',
+    route: '/voicetask',
     dmg: 'https://github.com/eXclipsea/voice-task/releases/download/v0.1.0/VoiceTask_0.1.0_aarch64.dmg',
   },
   {
@@ -65,56 +67,54 @@ const apps = [
     icon: Scale,
     color: '#fb923c',
     gradient: 'from-orange-500/20 to-orange-500/5',
-    url: 'https://argument-settler.vercel.app',
+    route: '/argument-settler',
     dmg: 'https://github.com/eXclipsea/neutral-ref/releases/download/v0.1.0/ArgumentSettler_0.1.0_aarch64.dmg',
   }
 ];
 
 export default function Dashboard() {
-  const [activeApp, setActiveApp] = useState<typeof apps[0] | null>(null);
   const [hoveredApp, setHoveredApp] = useState<string | null>(null);
   const [showDownloads, setShowDownloads] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [purchaseComplete, setPurchaseComplete] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (activeApp) {
-    const Icon = activeApp.icon;
-    return (
-      <div className="h-screen flex flex-col bg-[#0a0a0a]">
-        <div className="flex items-center gap-3 px-5 py-2.5 bg-[#111] border-b border-white/[0.06] shrink-0">
-          <button
-            onClick={() => setActiveApp(null)}
-            className="flex items-center gap-1.5 text-white/50 hover:text-white transition-all duration-200 text-[13px] font-medium"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Dashboard
-          </button>
-          <div className="w-px h-3.5 bg-white/10" />
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activeApp.color }} />
-            <span className="text-[13px] font-medium text-white/80">{activeApp.name}</span>
-          </div>
-          <div className="flex-1" />
-          <a
-            href={activeApp.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white/30 hover:text-white/60 transition-colors"
-          >
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
-        <iframe
-          src={activeApp.url}
-          className="flex-1 w-full border-0"
-          allow="camera;microphone"
-        />
-      </div>
-    );
-  }
+  const handlePurchase = async () => {
+    setIsProcessing(true);
+    
+    try {
+      // Initialize Stripe with your keys
+      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+      
+      // Create checkout session
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          priceId: 'prod_U2qxYcJ5mrZBZJ',
+          productName: 'Super Tools Dashboard'
+        })
+      });
+      
+      const { sessionId } = await response.json();
+      
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      
+      if (error) {
+        console.error('Stripe error:', error);
+      }
+    } catch (error) {
+      console.error('Purchase error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-blue-500/30">
@@ -210,60 +210,40 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="space-y-4">
-          {apps.map((app, i) => {
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          {apps.map((app) => {
             const Icon = app.icon;
-            const isHovered = hoveredApp === app.name;
             return (
-              <button
+              <Link
                 key={app.name}
-                onClick={() => setActiveApp(app)}
+                href={app.route}
                 onMouseEnter={() => setHoveredApp(app.name)}
                 onMouseLeave={() => setHoveredApp(null)}
-                className="group w-full text-left"
+                className="group relative bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-2xl border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer overflow-hidden block"
+                style={{
+                  boxShadow: hoveredApp === app.name 
+                    ? `0 0 40px ${app.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
+                    : '0 0 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)'
+                }}
               >
-                <div
-                  className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
-                    isHovered
-                      ? 'border-white/10 bg-white/[0.03]'
-                      : 'border-white/[0.04] bg-transparent'
-                  }`}
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-r ${app.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                  <div className="relative flex items-center gap-6 p-7">
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
-                      style={{ backgroundColor: `${app.color}15` }}
+                <div className={`absolute inset-0 bg-gradient-to-br ${app.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                
+                <div className="relative p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: `${app.color}20` }}
                     >
-                      <Icon className="w-5 h-5" style={{ color: app.color }} />
+                      <Icon className="w-6 h-6" style={{ color: app.color }} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-3">
-                        <h3 className="font-semibold text-[17px]">{app.name}</h3>
-                        <span className="text-[13px] font-medium" style={{ color: app.color }}>
-                          {app.tagline}
-                        </span>
-                      </div>
-                      <p className="text-white/40 text-[14px] mt-1 leading-relaxed">
-                        {app.description}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <a
-                        href={app.dmg}
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-white/20 hover:text-white/60 transition-colors p-2"
-                        title={`Download ${app.name}`}
-                      >
-                        <Download className="w-4 h-4" />
-                      </a>
-                      <div className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center group-hover:bg-white/10 transition-all">
-                        <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white group-hover:translate-x-px transition-all" />
-                      </div>
-                    </div>
+                    <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors duration-300" />
                   </div>
+                  
+                  <h3 className="text-xl font-semibold mb-2">{app.name}</h3>
+                  <p className="text-sm text-white/60 mb-4">{app.tagline}</p>
+                  <p className="text-sm text-white/40 leading-relaxed">{app.description}</p>
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -281,44 +261,52 @@ export default function Dashboard() {
               All five tools in a single Mac app. Free, fast, and always up to date.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4">
-              <a
-                href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg"
-                className="group inline-flex items-center gap-2.5 bg-white text-black font-semibold text-[15px] px-8 py-4 rounded-full hover:bg-white/90 transition-all"
-              >
-                <Apple className="w-4.5 h-4.5" />
-                Download Super Tools
-                <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              </a>
-              <p className="text-white/25 text-[13px]">macOS (Apple Silicon) &middot; v0.1.0 &middot; Free</p>
-            </div>
-
-            <button
-              onClick={() => setShowDownloads(!showDownloads)}
-              className="mt-8 text-[13px] text-white/30 hover:text-white/50 transition-colors underline underline-offset-4"
-            >
-              {showDownloads ? 'Hide individual downloads' : 'Or download apps individually'}
-            </button>
-
-            {showDownloads && (
-              <div className="mt-6 max-w-md mx-auto space-y-2">
-                {apps.map((app) => {
-                  const Icon = app.icon;
-                  return (
-                    <a
-                      key={app.name}
-                      href={app.dmg}
-                      className="flex items-center justify-between p-3 rounded-xl border border-white/[0.06] hover:bg-white/[0.02] transition-colors"
+              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-3xl border border-white/[0.06] p-12">
+                <div className="max-w-4xl mx-auto text-center">
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Download className="w-8 h-8 text-blue-400" />
+                    </div>
+                  </div>
+                  
+                  <h2 className="text-3xl font-bold mb-4">Get Super Tools Dashboard</h2>
+                  <p className="text-lg text-white/60 mb-8 max-w-2xl mx-auto">
+                    Download the complete Super Tools Dashboard as a desktop app. All 5 AI-powered tools in one beautiful, native application.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                    <button
+                      onClick={() => setShowPurchaseModal(true)}
+                      className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-4 h-4" style={{ color: app.color }} />
-                        <span className="text-[13px] font-medium text-white/70">{app.name}</span>
-                      </div>
-                      <Download className="w-3.5 h-3.5 text-white/25" />
-                    </a>
-                  );
-                })}
+                      <Apple className="w-5 h-5" />
+                      Get Super Tools for Mac
+                    </button>
+                    <button className="px-8 py-4 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl transition-all duration-300">
+                      Coming to Windows
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
+                    <div className="text-center">
+                      <Shield className="w-8 h-8 text-blue-400 mx-auto mb-3" />
+                      <h3 className="font-semibold mb-2">Privacy First</h3>
+                      <p className="text-sm text-white/60">All processing happens locally. Your data never leaves your device.</p>
+                    </div>
+                    <div className="text-center">
+                      <Zap className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                      <h3 className="font-semibold mb-2">Lightning Fast</h3>
+                      <p className="text-sm text-white/60">Native performance with instant startup and smooth interactions.</p>
+                    </div>
+                    <div className="text-center">
+                      <Cpu className="w-8 h-8 text-green-400 mx-auto mb-3" />
+                      <h3 className="font-semibold mb-2">AI Powered</h3>
+                      <p className="text-sm text-white/60">Advanced AI models for receipt scanning, voice transcription, and more.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </section>
@@ -337,6 +325,83 @@ export default function Dashboard() {
           </p>
         </div>
       </footer>
+      </div>
+
+      {/* Purchase Modal */}
+      {showPurchaseModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-8 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold">Get Super Tools</h3>
+              <button
+                onClick={() => setShowPurchaseModal(false)}
+                className="text-white/40 hover:text-white/60 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center gap-3">
+                <Apple className="w-6 h-6 text-blue-400" />
+                <div>
+                  <p className="font-medium">Super Tools Dashboard</p>
+                  <p className="text-sm text-white/60">Complete desktop app with all 5 tools</p>
+                </div>
+              </div>
+              
+              <div className="border-t border-white/[0.06] pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white/60">One-time purchase</span>
+                  <span className="text-2xl font-bold">$2.99</span>
+                </div>
+                <p className="text-xs text-white/40">Lifetime access • Free updates • No subscription</p>
+              </div>
+              
+              <div className="space-y-2 text-sm text-white/60">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-400" />
+                  <span>All 5 AI-powered tools</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-400" />
+                  <span>Native macOS app</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-400" />
+                  <span>Privacy-first design</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-400" />
+                  <span>Free lifetime updates</span>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={handlePurchase}
+              disabled={isProcessing}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              {isProcessing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Purchase with Stripe
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+            
+            <p className="text-xs text-white/40 text-center mt-4">
+              Secure payment powered by Stripe
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
