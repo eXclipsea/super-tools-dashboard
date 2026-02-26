@@ -155,9 +155,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-blue-500/30">
+    <div className="min-h-screen bg-white text-gray-900 selection:bg-blue-500/30">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#0a0a0a]/80 border-b border-white/[0.04]">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
@@ -166,12 +166,12 @@ export default function Dashboard() {
             <span className="font-semibold text-[15px] tracking-tight">Super Tools</span>
           </div>
           <div className="flex items-center gap-4">
-            <a href="#apps" className="text-[13px] text-white/50 hover:text-white transition-colors">Apps</a>
-            <a href="#download" className="text-[13px] text-white/50 hover:text-white transition-colors">Download</a>
+            <a href="#apps" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors">Apps</a>
+            <a href="#download" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors">Download</a>
             {!user ? (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="text-[13px] font-medium bg-white text-black px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors"
+                className="text-[13px] font-medium bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition-colors"
               >
                 Sign In
               </button>
@@ -184,7 +184,7 @@ export default function Dashboard() {
                 </div>
                 <button
                   onClick={logout}
-                  className="text-[13px] text-white/60 hover:text-white transition-colors"
+                  className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Sign Out
                 </button>
@@ -197,12 +197,12 @@ export default function Dashboard() {
       {/* Login Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-[#0a0a0a] border border-white/[0.1] rounded-2xl p-8">
+          <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Sign In</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
               <button
                 onClick={() => setShowLoginModal(false)}
-                className="text-white/40 hover:text-white/60 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -210,14 +210,14 @@ export default function Dashboard() {
             
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                    className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="Enter your email"
                     required
                   />
@@ -225,14 +225,14 @@ export default function Dashboard() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg pl-10 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
+                    className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="Enter your password"
                     required
                   />
@@ -245,15 +245,15 @@ export default function Dashboard() {
                   id="remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 bg-white/[0.05] border border-white/[0.1] rounded text-white focus:ring-white/20"
+                  className="w-4 h-4 bg-gray-50 border border-gray-300 rounded text-blue-600 focus:ring-blue-500"
                 />
-                <label htmlFor="remember" className="ml-2 text-sm text-white/60">
+                <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
                   Keep me signed in
                 </label>
               </div>
               
               {loginError && (
-                <div className="text-red-400 text-sm">{loginError}</div>
+                <div className="text-red-500 text-sm">{loginError}</div>
               )}
               
               <button
@@ -266,7 +266,7 @@ export default function Dashboard() {
             </form>
             
             <div className="mt-6 text-center">
-              <p className="text-sm text-white/40">
+              <p className="text-sm text-gray-500">
                 Any email and password combination will work for demo purposes
               </p>
             </div>
@@ -276,12 +276,11 @@ export default function Dashboard() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-600/[0.07] via-transparent to-transparent" />
         <div className="relative max-w-6xl mx-auto px-6 pt-28 pb-20">
           <div
             className={`transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
-            <p className="text-blue-400 text-sm font-medium tracking-wide uppercase mb-5">
+            <p className="text-blue-600 text-sm font-medium tracking-wide uppercase mb-5">
               5 tools. One app. Zero friction.
             </p>
             <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.05] tracking-tight max-w-3xl">
@@ -291,7 +290,7 @@ export default function Dashboard() {
                 actually helps.
               </span>
             </h1>
-            <p className="text-white/45 text-lg mt-6 max-w-xl leading-relaxed">
+            <p className="text-gray-600 text-lg mt-6 max-w-xl leading-relaxed">
               Five focused apps that handle the tedious stuff — receipts, cooking, writing, tasks, and arguments — so you can spend time on what matters.
             </p>
             <div className="flex items-center gap-4 mt-10">
@@ -339,7 +338,7 @@ export default function Dashboard() {
           <h2 className="text-3xl font-bold tracking-tight">
             Five apps. Each one does its job.
           </h2>
-          <p className="text-white/40 mt-3 text-lg">
+          <p className="text-gray-600 mt-3 text-lg">
             Click any app to open it right here.
           </p>
         </div>
@@ -353,32 +352,27 @@ export default function Dashboard() {
                 onClick={() => handleAppClick(app.route)}
                 onMouseEnter={() => setHoveredApp(app.name)}
                 onMouseLeave={() => setHoveredApp(null)}
-                className="group relative bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-2xl border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer overflow-hidden"
-                style={{
-                  boxShadow: hoveredApp === app.name 
-                    ? `0 0 40px ${app.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
-                    : '0 0 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)'
-                }}
+                className="group relative bg-white border border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${app.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${app.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
                 
                 <div className="relative p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div 
                       className="w-12 h-12 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${app.color}20` }}
+                      style={{ backgroundColor: `${app.color}15` }}
                     >
                       <Icon className="w-6 h-6" style={{ color: app.color }} />
                     </div>
-                    <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors duration-300" />
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
                   </div>
                   
-                  <h3 className="text-xl font-semibold mb-2">{app.name}</h3>
-                  <p className="text-sm text-white/60 mb-4">{app.tagline}</p>
-                  <p className="text-sm text-white/40 leading-relaxed">{app.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">{app.name}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{app.tagline}</p>
+                  <p className="text-sm text-gray-500 leading-relaxed">{app.description}</p>
                   
                   {!user && (
-                    <div className="mt-4 flex items-center gap-2 text-xs text-blue-400">
+                    <div className="mt-4 flex items-center gap-2 text-xs text-blue-600">
                       <Lock className="w-3 h-3" />
                       Sign in required
                     </div>
@@ -391,62 +385,28 @@ export default function Dashboard() {
       </section>
 
       {/* Download */}
-      <section id="download" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-600/[0.05] via-transparent to-transparent" />
-        <div className="relative max-w-6xl mx-auto px-6 py-24">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Get the native app.
-            </h2>
-            <p className="text-white/40 mt-3 text-lg max-w-md mx-auto">
-              All five tools in a single Mac app. Free, fast, and always up to date.
-            </p>
-            <div className="mt-10 flex flex-col items-center gap-4">
-              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-3xl border border-white/[0.06] p-12">
-                <div className="max-w-4xl mx-auto text-center">
-                  <div className="flex items-center justify-center mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                      <Download className="w-8 h-8 text-blue-400" />
-                    </div>
-                  </div>
-                  
-                  <h2 className="text-3xl font-bold mb-4">Get Super Tools Dashboard</h2>
-                  <p className="text-lg text-white/60 mb-8 max-w-2xl mx-auto">
-                    Download the complete Super Tools Dashboard as a desktop app. All 5 AI-powered tools in one beautiful, native application.
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                    <button
-                      onClick={() => setShowPurchaseModal(true)}
-                      className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
-                    >
-                      <Apple className="w-5 h-5" />
-                      Get Super Tools for Mac
-                    </button>
-                    <button className="px-8 py-4 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl transition-all duration-300">
-                      Coming to Windows
-                    </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
-                    <div className="text-center">
-                      <Shield className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-                      <h3 className="font-semibold mb-2">Privacy First</h3>
-                      <p className="text-sm text-white/60">All processing happens locally. Your data never leaves your device.</p>
-                    </div>
-                    <div className="text-center">
-                      <Zap className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-                      <h3 className="font-semibold mb-2">Lightning Fast</h3>
-                      <p className="text-sm text-white/60">Native performance with instant startup and smooth interactions.</p>
-                    </div>
-                    <div className="text-center">
-                      <Cpu className="w-8 h-8 text-green-400 mx-auto mb-3" />
-                      <h3 className="font-semibold mb-2">AI Powered</h3>
-                      <p className="text-sm text-white/60">Advanced AI models for receipt scanning, voice transcription, and more.</p>
-                    </div>
-                  </div>
-                </div>
+      <section id="download" className="border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center">
+                <Download className="w-6 h-6 text-blue-600" />
               </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Get the native app</h3>
+                <p className="text-sm text-gray-600">All 5 tools in one Mac app</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowPurchaseModal(true)}
+                className="px-6 py-2.5 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
+                <Apple className="w-4 h-4" />
+                Download for Mac
+              </button>
+              <span className="text-sm text-gray-500">$2.99 • One-time purchase</span>
             </div>
           </div>
         </div>
@@ -455,12 +415,12 @@ export default function Dashboard() {
       {/* Purchase Modal - Always Available */}
       {showPurchaseModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-8 max-w-md w-full">
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-md w-full">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold">Get Super Tools</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Get Super Tools</h3>
               <button
                 onClick={() => setShowPurchaseModal(false)}
-                className="text-white/40 hover:text-white/60 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -468,36 +428,36 @@ export default function Dashboard() {
             
             <div className="space-y-4 mb-6">
               <div className="flex items-center gap-3">
-                <Apple className="w-6 h-6 text-blue-400" />
+                <Apple className="w-6 h-6 text-blue-600" />
                 <div>
-                  <p className="font-medium">Super Tools Dashboard</p>
-                  <p className="text-sm text-white/60">Complete desktop app with all 5 tools</p>
+                  <p className="font-medium text-gray-900">Super Tools Dashboard</p>
+                  <p className="text-sm text-gray-600">Complete desktop app with all 5 tools</p>
                 </div>
               </div>
               
-              <div className="border-t border-white/[0.06] pt-4">
+              <div className="border-t border-gray-200 pt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white/60">One-time purchase</span>
-                  <span className="text-2xl font-bold">$2.99</span>
+                  <span className="text-gray-600">One-time purchase</span>
+                  <span className="text-2xl font-bold text-gray-900">$2.99</span>
                 </div>
-                <p className="text-xs text-white/40">Lifetime access • Free updates • No subscription</p>
+                <p className="text-xs text-gray-500">Lifetime access • Free updates • No subscription</p>
               </div>
               
-              <div className="space-y-2 text-sm text-white/60">
+              <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
+                  <Check className="w-4 h-4 text-green-600" />
                   <span>All 5 AI-powered tools</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
+                  <Check className="w-4 h-4 text-green-600" />
                   <span>Native macOS app</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
+                  <Check className="w-4 h-4 text-green-600" />
                   <span>Privacy-first design</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
+                  <Check className="w-4 h-4 text-green-600" />
                   <span>Free lifetime updates</span>
                 </div>
               </div>
