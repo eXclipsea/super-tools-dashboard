@@ -16,6 +16,7 @@ export default function QuickReceiptComponent() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -41,6 +42,34 @@ export default function QuickReceiptComponent() {
         setScanResult(null);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setUploadedImage(event.target?.result as string);
+          setScanResult(null);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -228,16 +257,24 @@ export default function QuickReceiptComponent() {
                   className="hidden"
                 />
                 
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-white/[0.2] rounded-xl p-8 hover:border-white/[0.4] transition-colors group"
-                >
-                  <div className="flex flex-col items-center">
-                    <Upload className="w-12 h-12 text-white/40 group-hover:text-white/60 mb-4" />
-                    <p className="text-white/60 mb-2">Click to upload receipt image</p>
-                    <p className="text-white/40 text-sm">PNG, JPG up to 10MB</p>
-                  </div>
-                </button>
+                <div 
+                className={`border-2 border-dashed rounded-xl p-8 transition-all cursor-pointer ${
+                  isDragging 
+                    ? 'border-cyan-400 bg-cyan-400/5' 
+                    : 'border-white/[0.2] hover:border-white/[0.4]'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="flex flex-col items-center">
+                  <Upload className="w-12 h-12 text-white/40 mb-4" />
+                  <p className="text-white/60 mb-2">Drag & drop receipt image here</p>
+                  <p className="text-white/40 text-sm mb-4">or click to browse</p>
+                  <p className="text-white/30 text-xs">PNG, JPG up to 10MB</p>
+                </div>
+              </div>
               </div>
             ) : (
               <div className="space-y-4">

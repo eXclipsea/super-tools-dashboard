@@ -32,6 +32,7 @@ export default function KitchenCommander() {
   const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,6 +48,33 @@ export default function KitchenCommander() {
         setSelectedImage(event.target?.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setSelectedImage(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -179,7 +207,16 @@ export default function KitchenCommander() {
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="text-lg font-semibold mb-4">Upload Photo</h3>
-                <div className="border-2 border-dashed border-neutral-800 rounded-xl p-8 text-center">
+                <div 
+                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
+                    isDragging 
+                      ? 'border-green-400 bg-green-400/5' 
+                      : 'border-neutral-800'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
                   {selectedImage ? (
                     <div className="space-y-4">
                       <img src={selectedImage} alt="Uploaded" className="w-full h-64 object-cover rounded-lg" />
@@ -193,7 +230,8 @@ export default function KitchenCommander() {
                   ) : (
                     <div>
                       <Upload className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
-                      <p className="text-neutral-400 mb-4">Drag and drop or click to upload</p>
+                      <p className="text-neutral-400 mb-2">Drag & drop your fridge photo here</p>
+                      <p className="text-neutral-500 text-sm mb-4">or click to browse</p>
                       <input
                         type="file"
                         accept="image/*"
