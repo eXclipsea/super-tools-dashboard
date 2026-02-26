@@ -33,18 +33,12 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
-    }
-  ],
   "side_panel": {
     "default_path": "sidepanel.html"
   },
   "web_accessible_resources": [
     {
-      "resources": ["injected.js", "sidepanel.html"],
+      "resources": ["sidepanel.html"],
       "matches": ["<all_urls>"]
     }
   ],
