@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { getOpenAI, openAIError } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
+    const openai = getOpenAI();
     const { styleProfile, inputMessage } = await request.json();
 
     if (!styleProfile || !inputMessage) {
@@ -16,11 +15,11 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `You are a writing assistant. The user has this writing style: ${styleProfile.description}. Key characteristics: ${styleProfile.characteristics.join(', ')}. Mirror this style exactly when drafting replies. Always return valid JSON.`,
+          content: `You are a writing assistant. Mirror this style exactly: ${styleProfile.description}. Characteristics: ${styleProfile.characteristics.join(', ')}. Always return valid JSON.`,
         },
         {
           role: 'user',
-          content: `Here is a message I need to reply to:\n\n${inputMessage}\n\nFirst summarize the key points as bullet points (TL;DR), then draft a reply that matches my writing style. Return JSON: {"summary": "• point1\\n• point2\\n• point3", "draft": "the reply text"}`,
+          content: `Reply to this message:\n\n${inputMessage}\n\nReturn JSON: {"summary": "• bullet points of key items", "draft": "the reply text"}`,
         },
       ],
       response_format: { type: 'json_object' },
@@ -29,8 +28,7 @@ export async function POST(request: NextRequest) {
 
     const result = JSON.parse(response.choices[0].message.content!);
     return NextResponse.json(result);
-  } catch (error) {
-    console.error('PersonaSync draft-reply error:', error);
-    return NextResponse.json({ error: 'Failed to draft reply' }, { status: 500 });
+  } catch (error: any) {
+    return openAIError(error);
   }
 }

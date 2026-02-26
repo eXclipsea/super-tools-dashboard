@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { getOpenAI, openAIError } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
+    const openai = getOpenAI();
     const { items } = await request.json();
 
     if (!items || items.length === 0) {
@@ -22,7 +21,7 @@ export async function POST(request: NextRequest) {
         },
         {
           role: 'user',
-          content: `I have these ingredients: ${itemList}. Suggest 4 recipes I can make. For each recipe calculate a match score (0-100) based on how many required ingredients I already have. Return JSON: {"recipes": [{"name": "string", "ingredients": ["string"], "matchScore": number, "timeToCook": "string", "difficulty": "Easy|Medium|Hard", "calories": number, "instructions": "string"}]}`,
+          content: `I have: ${itemList}. Suggest 4 recipes. Return JSON: {"recipes": [{"name": "string", "ingredients": ["string"], "matchScore": number, "timeToCook": "string", "difficulty": "Easy|Medium|Hard", "calories": number, "instructions": "string"}]}`,
         },
       ],
       response_format: { type: 'json_object' },
@@ -30,11 +29,8 @@ export async function POST(request: NextRequest) {
     });
 
     const content = JSON.parse(response.choices[0].message.content!);
-    const recipes = content.recipes || [];
-
-    return NextResponse.json({ recipes });
-  } catch (error) {
-    console.error('Kitchen Commander recipes error:', error);
-    return NextResponse.json({ error: 'Failed to generate recipes' }, { status: 500 });
+    return NextResponse.json({ recipes: content.recipes || [] });
+  } catch (error: any) {
+    return openAIError(error);
   }
 }
