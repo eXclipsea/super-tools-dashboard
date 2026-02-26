@@ -40,53 +40,63 @@ export default function ArgumentSettler() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setParsingImage(true);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setScreenshotPreview(event.target?.result as string);
-        setTimeout(() => {
-          setClaimA("The Earth is flat");
-          setClaimB("The Earth is round");
-          setParsingImage(false);
-        }, 1500);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    setParsingImage(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target?.result as string;
+      setScreenshotPreview(dataUrl);
+
+      try {
+        const res = await fetch('/api/argument-settler/parse-screenshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataUrl }),
+        });
+        const data = await res.json();
+        if (data.claimA) setClaimA(data.claimA);
+        if (data.claimB) setClaimB(data.claimB);
+      } catch (err) {
+        console.error('Screenshot parse error:', err);
+      } finally {
+        setParsingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const settleArgument = async () => {
     if (!claimA || !claimB) return;
-    
+
     setLoading(true);
-    setTimeout(() => {
-      const newVerdict: Verdict = {
-        winner: 'B',
-        reasoning: "Multiple lines of scientific evidence support that the Earth is spherical: satellite imagery, circumnavigation, gravity patterns, lunar eclipses, and observations of ships disappearing over the horizon hull-first.",
-        confidence: 99.9,
-        sources: [
-          "NASA satellite imagery",
-          "Ferdinand Magellan's circumnavigation (1519-1522)",
-          "Aristotle's observations (4th century BCE)",
-          "Modern GPS systems"
-        ],
-        roast: roastMode ? "Claim A is flatter than your chances of winning this argument. Even ancient Greeks figured this one out 2000+ years ago." : undefined
-      };
-      
+    try {
+      const res = await fetch('/api/argument-settler/settle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimA, claimB, category, roastMode }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      const newVerdict: Verdict = data.verdict;
       setVerdict(newVerdict);
-      
+
       const newEntry: ArgumentHistory = {
         id: Date.now().toString(),
         claimA,
         claimB,
         verdict: newVerdict,
         timestamp: new Date().toISOString(),
-        category
+        category,
       };
-      
+
       setArgumentHistory(prev => [newEntry, ...prev]);
+    } catch (err) {
+      console.error('Settle error:', err);
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const copyVerdict = () => {

@@ -31,6 +31,7 @@ export default function VoiceTask() {
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const audioBlobRef = useRef<Blob | null>(null);
 
   const startRecording = async () => {
     try {
@@ -47,6 +48,7 @@ export default function VoiceTask() {
 
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        audioBlobRef.current = blob;
         const url = URL.createObjectURL(blob);
         const newRecording: Recording = {
           id: Date.now().toString(),
@@ -55,9 +57,9 @@ export default function VoiceTask() {
           duration: 0,
         };
         setRecordings(prev => [newRecording, ...prev]);
-        
-        // Auto-transcribe
-        transcribeRecording(newRecording);
+
+        // Auto-transcribe with real Whisper API
+        transcribeRecording(newRecording, blob);
       };
 
       mediaRecorder.start();
@@ -74,47 +76,40 @@ export default function VoiceTask() {
     }
   };
 
-  const transcribeRecording = async (recording: Recording) => {
+  const transcribeRecording = async (recording: Recording, blob: Blob) => {
     setTranscribing(true);
-    // Simulate API call
-    setTimeout(() => {
-      const transcript = "Call Sarah back about the project proposal by Friday. Review the budget spreadsheet and send feedback to the team. Pick up groceries: milk, eggs, bread. Schedule dentist appointment for next Tuesday morning.";
-      
-      // Parse tasks from transcript
-      const taskTexts = transcript.split('.').filter(t => t.trim());
-      const newTasks: Task[] = taskTexts.map((text, idx) => ({
+    try {
+      const formData = new FormData();
+      formData.append('audio', new File([blob], 'recording.webm', { type: 'audio/webm' }));
+
+      const res = await fetch('/api/voicetask/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      const { transcript, tasks: parsedTasks } = data;
+
+      const newTasks: Task[] = (parsedTasks || []).map((t: Omit<Task, 'id' | 'createdAt'>, idx: number) => ({
+        ...t,
         id: `task-${Date.now()}-${idx}`,
-        text: text.trim(),
-        category: idx === 0 ? 'urgent' : idx === 1 ? 'urgent' : 'later',
         createdAt: new Date().toISOString(),
-        priority: idx === 0 ? 'high' : idx === 1 ? 'medium' : 'low',
-        dueDate: idx === 0 ? getNextFriday() : idx === 3 ? getNextTuesday() : undefined,
+        dueDate: t.dueDate || undefined,
       }));
 
       setTasks(prev => [...newTasks, ...prev]);
-      
-      setRecordings(prev => prev.map(r => 
-        r.id === recording.id ? { ...r, transcript } : r
-      ));
-      
+
+      if (transcript) {
+        setRecordings(prev => prev.map(r =>
+          r.id === recording.id ? { ...r, transcript } : r
+        ));
+      }
+    } catch (err) {
+      console.error('Transcribe error:', err);
+    } finally {
       setTranscribing(false);
-    }, 2000);
-  };
-
-  const getNextFriday = () => {
-    const date = new Date();
-    const day = date.getDay();
-    const diff = (5 - day + 7) % 7 || 7;
-    date.setDate(date.getDate() + diff);
-    return date.toISOString().split('T')[0];
-  };
-
-  const getNextTuesday = () => {
-    const date = new Date();
-    const day = date.getDay();
-    const diff = (2 - day + 7) % 7 || 7;
-    date.setDate(date.getDate() + diff);
-    return date.toISOString().split('T')[0];
+    }
   };
 
   const updateTaskCategory = (id: string, category: Task['category']) => {

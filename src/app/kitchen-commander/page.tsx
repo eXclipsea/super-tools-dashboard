@@ -22,6 +22,7 @@ interface Recipe {
   timeToCook: string;
   difficulty: string;
   calories: number;
+  instructions?: string;
 }
 
 const CATEGORIES = ['All', 'Produce', 'Dairy', 'Meat', 'Pantry', 'Frozen', 'Beverages'];
@@ -38,6 +39,7 @@ export default function KitchenCommander() {
   const [shoppingList, setShoppingList] = useState<string[]>([]);
   const [newItem, setNewItem] = useState({ name: '', quantity: '', expiryDate: '', category: 'Produce' });
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isGeneratingRecipes, setIsGeneratingRecipes] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,29 +54,51 @@ export default function KitchenCommander() {
 
   const analyzeImage = async () => {
     if (!selectedImage) return;
-    
+
     setIsAnalyzing(true);
-    // Simulate API call
-    setTimeout(() => {
-      const newItems: PantryItem[] = [
-        { id: '1', name: 'Milk', quantity: '1 gallon', expiryDate: '2024-03-15', isOpened: false, addedDate: new Date().toISOString(), category: 'Dairy' },
-        { id: '2', name: 'Eggs', quantity: '12 count', expiryDate: '2024-03-20', isOpened: false, addedDate: new Date().toISOString(), category: 'Dairy' },
-        { id: '3', name: 'Bread', quantity: '1 loaf', expiryDate: '2024-03-10', isOpened: false, addedDate: new Date().toISOString(), category: 'Pantry' },
-      ];
+    try {
+      const res = await fetch('/api/kitchen-commander/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: selectedImage }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      const newItems: PantryItem[] = (data.items || []).map((item: Omit<PantryItem, 'id' | 'isOpened' | 'addedDate'>) => ({
+        ...item,
+        id: `${Date.now()}-${Math.random()}`,
+        isOpened: false,
+        addedDate: new Date().toISOString(),
+      }));
       setPantryItems(prev => [...prev, ...newItems]);
+    } catch (err) {
+      console.error('Analyze error:', err);
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
+    }
   };
 
   const generateRecipes = async () => {
-    // Simulate recipe generation
-    setTimeout(() => {
-      const newRecipes: Recipe[] = [
-        { id: '1', name: 'Scrambled Eggs', ingredients: ['Eggs', 'Milk', 'Butter'], matchScore: 95, timeToCook: '10 min', difficulty: 'Easy', calories: 250 },
-        { id: '2', name: 'French Toast', ingredients: ['Bread', 'Eggs', 'Milk'], matchScore: 88, timeToCook: '15 min', difficulty: 'Easy', calories: 320 },
-      ];
+    if (pantryItems.length === 0) return;
+    setIsGeneratingRecipes(true);
+    try {
+      const res = await fetch('/api/kitchen-commander/recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: pantryItems }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      const newRecipes: Recipe[] = (data.recipes || []).map((r: Omit<Recipe, 'id'>, idx: number) => ({
+        ...r,
+        id: `${Date.now()}-${idx}`,
+      }));
       setRecipes(newRecipes);
-    }, 1500);
+    } catch (err) {
+      console.error('Recipes error:', err);
+    } finally {
+      setIsGeneratingRecipes(false);
+    }
   };
 
   const addPantryItem = () => {
@@ -362,9 +386,11 @@ export default function KitchenCommander() {
               <h3 className="text-lg font-semibold">Recipe Suggestions</h3>
               <button
                 onClick={generateRecipes}
-                className="bg-green-500 hover:bg-green-600 text-black font-medium py-2 px-4 rounded-lg text-sm"
+                disabled={isGeneratingRecipes || pantryItems.length === 0}
+                className="bg-green-500 hover:bg-green-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-medium py-2 px-4 rounded-lg text-sm flex items-center gap-2"
               >
-                Generate Recipes
+                {isGeneratingRecipes && <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />}
+                {isGeneratingRecipes ? 'Generating...' : 'Generate Recipes'}
               </button>
             </div>
 
@@ -386,12 +412,18 @@ export default function KitchenCommander() {
                     </div>
                     <div>
                       <h5 className="font-medium mb-2">Ingredients:</h5>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 mb-4">
                         {recipe.ingredients.map((ing, idx) => (
                           <span key={idx} className="bg-neutral-800 px-3 py-1 rounded-full text-sm">{ing}</span>
                         ))}
                       </div>
                     </div>
+                    {recipe.instructions && (
+                      <div>
+                        <h5 className="font-medium mb-2">Instructions:</h5>
+                        <p className="text-sm text-neutral-400 leading-relaxed">{recipe.instructions}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

@@ -88,17 +88,13 @@ export default function Dashboard() {
     setIsProcessing(true);
     
     try {
-      // Initialize Stripe with your keys
-      const stripe = (window as any).Stripe('pk_live_51QjpF8C7Kvo5MPeV6LIkydaHiy1I4hxuUPGSlhb2OoWtRUsQiA0WnxCDUYvbZV120BiHvAIW9cBMR9MhRcBJwuK900rosLeOM1');
-      
+      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
       // Create checkout session
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          priceId: 'prod_U2qxYcJ5mrZBZJ',
-          productName: 'Super Tools Dashboard'
-        })
+        body: JSON.stringify({ productName: 'Super Tools Dashboard' })
       });
       
       const { sessionId } = await response.json();

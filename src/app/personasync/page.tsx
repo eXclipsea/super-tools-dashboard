@@ -28,6 +28,7 @@ interface HistoryEntry {
 export default function PersonaSync() {
   const [activeTab, setActiveTab] = useState<'analyze' | 'draft' | 'brands' | 'history'>('analyze');
   const [showBanner, setShowBanner] = useState(true);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [examples, setExamples] = useState('');
   const [styleProfile, setStyleProfile] = useState<StyleProfile | null>(null);
   const [inputMessage, setInputMessage] = useState('');
@@ -44,44 +45,82 @@ export default function PersonaSync() {
 
   const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setParsingImage(true);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setScreenshotPreview(event.target?.result as string);
-        setTimeout(() => {
-          setExamples("Hey! Thanks for reaching out about the project. I'll review the details and get back to you by tomorrow with my thoughts.\n\nJust wanted to follow up on our meeting. Great ideas discussed!\n\nlol that's hilarious, count me in for sure");
-          setParsingImage(false);
-        }, 1500);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    setParsingImage(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target?.result as string;
+      setScreenshotPreview(dataUrl);
+
+      try {
+        const res = await fetch('/api/personasync/parse-screenshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataUrl }),
+        });
+        const data = await res.json();
+        if (data.text) setExamples(data.text);
+      } catch (err) {
+        console.error('Screenshot parse error:', err);
+      } finally {
+        setParsingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const analyzeStyle = async () => {
     if (!examples) return;
-    
+
     setLoading(true);
-    setTimeout(() => {
-      setStyleProfile({
-        description: "Friendly and professional with a casual tone. Uses emojis occasionally and keeps messages concise.",
-        characteristics: ["Conversational", "Professional yet casual", "Uses short paragraphs", "Occasional humor"]
+    try {
+      const res = await fetch('/api/personasync/analyze-style', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ examples }),
       });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setStyleProfile(data.profile);
       setStep(2);
+    } catch (err) {
+      console.error('Analyze style error:', err);
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const processMessage = async () => {
-    if (!inputMessage) return;
-    
+    if (!inputMessage || !styleProfile) return;
+
     setLoading(true);
-    setTimeout(() => {
-      setSummary("• Request for project review\n• Timeline: Tomorrow response needed\n• Action: Review and provide feedback");
-      setDraft("Hey! Thanks for reaching out about the project. I'll review the details and get back to you by tomorrow with my thoughts.\n\nBest regards");
+    try {
+      const res = await fetch('/api/personasync/draft-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ styleProfile, inputMessage }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setSummary(data.summary || '');
+      setDraft(data.draft || '');
+
+      const newEntry: HistoryEntry = {
+        id: Date.now().toString(),
+        inputMessage,
+        summary: data.summary || '',
+        draft: data.draft || '',
+        brandName: brandName || 'Default',
+        timestamp: new Date().toISOString(),
+      };
+      setMessageHistory(prev => [newEntry, ...prev]);
       setStep(3);
+    } catch (err) {
+      console.error('Draft reply error:', err);
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const copyDraft = () => {
@@ -92,14 +131,14 @@ export default function PersonaSync() {
 
   const saveBrand = () => {
     if (!brandName || !styleProfile) return;
-    
+
     const newBrand: SavedBrand = {
       id: Date.now().toString(),
       name: brandName,
       profile: styleProfile,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
-    
+
     setSavedBrands(prev => [...prev, newBrand]);
     setBrandName('');
   };
@@ -107,8 +146,6 @@ export default function PersonaSync() {
   const deleteBrand = (id: string) => {
     setSavedBrands(prev => prev.filter(brand => brand.id !== id));
   };
-
-  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -178,8 +215,8 @@ export default function PersonaSync() {
             {step === 1 && (
               <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
                 <h2 className="text-xl font-semibold mb-4">Step 1: Create Your Style Profile</h2>
-                <p className="text-neutral-400 mb-6">Paste 5 examples of your past emails or texts, or upload a screenshot. I'll analyze your writing style.</p>
-                
+                <p className="text-neutral-400 mb-6">Paste 5 examples of your past emails or texts, or upload a screenshot. AI will analyze your writing style.</p>
+
                 <div className="mb-6">
                   <div className="flex items-center gap-4 mb-4">
                     <button
@@ -226,8 +263,9 @@ Example 3: lol that's hilarious..."
                 <button
                   onClick={analyzeStyle}
                   disabled={!examples || loading}
-                  className="w-full bg-rose-500 hover:bg-rose-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                  className="w-full bg-rose-500 hover:bg-rose-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
+                  {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                   {loading ? 'Analyzing...' : 'Create Style Profile'}
                 </button>
               </div>
@@ -238,9 +276,14 @@ Example 3: lol that's hilarious..."
               <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
                 <div className="mb-6 p-4 bg-rose-500/10 rounded-lg border border-rose-500/20">
                   <h3 className="font-semibold text-rose-400 mb-2">Your Style Profile</h3>
-                  <p className="text-sm text-rose-300">{styleProfile?.description}</p>
+                  <p className="text-sm text-rose-300 mb-3">{styleProfile?.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {styleProfile?.characteristics.map((c, i) => (
+                      <span key={i} className="text-xs bg-rose-500/20 text-rose-300 px-2 py-1 rounded">{c}</span>
+                    ))}
+                  </div>
                 </div>
-                
+
                 <h2 className="text-xl font-semibold mb-4">Step 2: Paste Message to Reply To</h2>
                 <textarea
                   value={inputMessage}
@@ -258,9 +301,10 @@ Example 3: lol that's hilarious..."
                   <button
                     onClick={processMessage}
                     disabled={!inputMessage || loading}
-                    className="flex-1 bg-rose-500 hover:bg-rose-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                    className="flex-1 bg-rose-500 hover:bg-rose-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
-                    {loading ? 'Processing...' : 'Generate Reply'}
+                    {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                    {loading ? 'Generating...' : 'Generate Reply'}
                   </button>
                 </div>
               </div>
@@ -270,19 +314,15 @@ Example 3: lol that's hilarious..."
             {step === 3 && (
               <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
                 <h2 className="text-xl font-semibold mb-6">Results</h2>
-                
+
                 <div className="mb-6 p-4 bg-neutral-800 rounded-lg">
                   <h3 className="font-semibold mb-2 flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-rose-400" />
                     TL;DR Summary
                   </h3>
-                  <ul className="list-disc list-inside text-neutral-300 space-y-1">
-                    {summary.split('\n').map((point, i) => (
-                      <li key={i}>{point}</li>
-                    ))}
-                  </ul>
+                  <div className="text-neutral-300 text-sm whitespace-pre-line">{summary}</div>
                 </div>
-                
+
                 <div className="mb-6 p-4 bg-rose-500/10 rounded-lg border border-rose-500/20">
                   <h3 className="font-semibold mb-2 flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-rose-400" />
@@ -290,7 +330,7 @@ Example 3: lol that's hilarious..."
                   </h3>
                   <p className="text-rose-100 whitespace-pre-wrap">{draft}</p>
                 </div>
-                
+
                 <div className="flex gap-4">
                   <button
                     onClick={() => setStep(2)}
@@ -340,6 +380,9 @@ Example 3: lol that's hilarious..."
                   Save Brand
                 </button>
               </div>
+              {!styleProfile && (
+                <p className="text-xs text-neutral-600 mt-2">Create a style profile first in the AI Generator tab</p>
+              )}
             </div>
 
             {savedBrands.length === 0 ? (
@@ -391,8 +434,8 @@ Example 3: lol that's hilarious..."
                       <h4 className="font-medium">{entry.brandName}</h4>
                       <span className="text-xs text-neutral-500">{new Date(entry.timestamp).toLocaleDateString()}</span>
                     </div>
-                    <p className="text-sm text-neutral-400 mb-3">{entry.inputMessage}</p>
-                    <p className="text-sm text-rose-100">{entry.draft}</p>
+                    <p className="text-sm text-neutral-400 mb-3 line-clamp-2">{entry.inputMessage}</p>
+                    <p className="text-sm text-rose-100 whitespace-pre-wrap">{entry.draft}</p>
                   </div>
                 ))}
               </div>
