@@ -36,6 +36,7 @@ export default function ArgumentSettler() {
   const [copied, setCopied] = useState(false);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [parsingImage, setParsingImage] = useState(false);
+  const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,6 +71,8 @@ export default function ArgumentSettler() {
     if (!claimA || !claimB) return;
 
     setLoading(true);
+    setError('');
+    setVerdict(null);
     try {
       const res = await fetch('/api/argument-settler/settle', {
         method: 'POST',
@@ -92,8 +95,9 @@ export default function ArgumentSettler() {
       };
 
       setArgumentHistory(prev => [newEntry, ...prev]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Settle error:', err);
+      setError(err.message || 'Failed to settle argument. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -224,6 +228,13 @@ export default function ArgumentSettler() {
                     <span className="text-orange-400">🔥 Roast Mode</span>
                   </label>
                 </div>
+
+                {error && (
+                  <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                    <span className="shrink-0">⚠</span>
+                    {error}
+                  </div>
+                )}
 
                 <button
                   onClick={settleArgument}

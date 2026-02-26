@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Camera, Upload, ChefHat, Plus, X, Calendar, AlertCircle, BookOpen, Sparkles, Trash2, Search, Filter, Download, ArrowLeft } from 'lucide-react';
+import { Camera, Upload, ChefHat, Plus, X, Calendar, AlertCircle, Sparkles, Trash2, Search, Download, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface PantryItem {
@@ -40,6 +40,8 @@ export default function KitchenCommander() {
   const [newItem, setNewItem] = useState({ name: '', quantity: '', expiryDate: '', category: 'Produce' });
   const [showAddForm, setShowAddForm] = useState(false);
   const [isGeneratingRecipes, setIsGeneratingRecipes] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState('');
+  const [recipeError, setRecipeError] = useState('');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,6 +58,7 @@ export default function KitchenCommander() {
     if (!selectedImage) return;
 
     setIsAnalyzing(true);
+    setAnalyzeError('');
     try {
       const res = await fetch('/api/kitchen-commander/analyze', {
         method: 'POST',
@@ -71,8 +74,9 @@ export default function KitchenCommander() {
         addedDate: new Date().toISOString(),
       }));
       setPantryItems(prev => [...prev, ...newItems]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Analyze error:', err);
+      setAnalyzeError(err.message || 'Failed to analyze image. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -94,8 +98,9 @@ export default function KitchenCommander() {
         id: `${Date.now()}-${idx}`,
       }));
       setRecipes(newRecipes);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Recipes error:', err);
+      setRecipeError(err.message || 'Failed to generate recipes. Please try again.');
     } finally {
       setIsGeneratingRecipes(false);
     }
@@ -254,6 +259,12 @@ export default function KitchenCommander() {
                     <p className="text-sm text-neutral-500">
                       AI will identify items, quantities, and suggest expiry dates
                     </p>
+                    {analyzeError && (
+                      <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        {analyzeError}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <p className="text-neutral-500">Upload an image to get started</p>
@@ -394,10 +405,18 @@ export default function KitchenCommander() {
               </button>
             </div>
 
+            {recipeError && (
+              <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {recipeError}
+              </div>
+            )}
+
             {recipes.length === 0 ? (
               <div className="text-center py-12">
                 <Sparkles className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
                 <p className="text-neutral-500">Generate recipes based on your pantry items</p>
+                {pantryItems.length === 0 && <p className="text-neutral-600 text-sm mt-1">Add items to your pantry first</p>}
               </div>
             ) : (
               <div className="grid gap-4">

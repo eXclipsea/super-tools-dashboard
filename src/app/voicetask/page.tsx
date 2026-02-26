@@ -29,6 +29,7 @@ export default function VoiceTask() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [transcribing, setTranscribing] = useState(false);
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
+  const [transcribeError, setTranscribeError] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioBlobRef = useRef<Blob | null>(null);
@@ -66,6 +67,7 @@ export default function VoiceTask() {
       setIsRecording(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
+      setTranscribeError('Microphone access denied. Please allow microphone access and try again.');
     }
   };
 
@@ -78,6 +80,7 @@ export default function VoiceTask() {
 
   const transcribeRecording = async (recording: Recording, blob: Blob) => {
     setTranscribing(true);
+    setTranscribeError('');
     try {
       const formData = new FormData();
       formData.append('audio', new File([blob], 'recording.webm', { type: 'audio/webm' }));
@@ -105,8 +108,9 @@ export default function VoiceTask() {
           r.id === recording.id ? { ...r, transcript } : r
         ));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Transcribe error:', err);
+      setTranscribeError(err.message || 'Failed to transcribe. Please try again.');
     } finally {
       setTranscribing(false);
     }
@@ -229,7 +233,14 @@ export default function VoiceTask() {
                 {transcribing && (
                   <div className="mt-6 flex items-center justify-center gap-2 text-violet-400">
                     <div className="w-4 h-4 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm">Transcribing...</span>
+                    <span className="text-sm">Transcribing with AI...</span>
+                  </div>
+                )}
+
+                {transcribeError && (
+                  <div className="mt-4 flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                    <span className="shrink-0">⚠</span>
+                    {transcribeError}
                   </div>
                 )}
               </div>
