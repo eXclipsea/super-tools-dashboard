@@ -65,7 +65,7 @@ export default function VoiceTask() {
         duration: 0,
       };
       setRecordings(prev => [newRecording, ...prev]);
-      transcribeRecording(newRecording);
+      // Don't auto-transcribe - let user choose to transcribe
     }
   };
 
@@ -181,8 +181,7 @@ export default function VoiceTask() {
         };
         setRecordings(prev => [newRecording, ...prev]);
         
-        // Auto-transcribe
-        transcribeRecording(newRecording);
+        // Don't auto-transcribe - let user choose to transcribe manually
       };
 
       mediaRecorder.start();
@@ -201,26 +200,29 @@ export default function VoiceTask() {
 
   const transcribeRecording = async (recording: Recording) => {
     setTranscribing(true);
-    // Simulate API call
+    // Simulate API call - only generate tasks if there's actual audio
     setTimeout(() => {
-      const transcript = "Call Sarah back about the project proposal by Friday. Review the budget spreadsheet and send feedback to the team. Pick up groceries: milk, eggs, bread. Schedule dentist appointment for next Tuesday morning.";
-      
-      // Parse tasks from transcript
-      const taskTexts = transcript.split('.').filter(t => t.trim());
-      const newTasks: Task[] = taskTexts.map((text, idx) => ({
-        id: `task-${Date.now()}-${idx}`,
-        text: text.trim(),
-        category: idx === 0 ? 'urgent' : idx === 1 ? 'urgent' : 'later',
-        createdAt: new Date().toISOString(),
-        priority: idx === 0 ? 'high' : idx === 1 ? 'medium' : 'low',
-        dueDate: idx === 0 ? getNextFriday() : idx === 3 ? getNextTuesday() : undefined,
-      }));
+      // Only generate transcript if recording has actual audio (not empty)
+      if (recording.url && recording.url !== 'mock-audio-data') {
+        const transcript = "This is a sample transcript from your audio recording. Call Sarah back about the project proposal by Friday. Review the budget spreadsheet and send feedback to the team.";
+        
+        // Parse tasks from transcript
+        const taskTexts = transcript.split('.').filter(t => t.trim());
+        const newTasks: Task[] = taskTexts.map((text, idx) => ({
+          id: `task-${Date.now()}-${idx}`,
+          text: text.trim(),
+          category: idx === 0 ? 'urgent' : idx === 1 ? 'urgent' : 'later',
+          createdAt: new Date().toISOString(),
+          priority: idx === 0 ? 'high' : idx === 1 ? 'medium' : 'low',
+          dueDate: idx === 0 ? getNextFriday() : idx === 3 ? getNextTuesday() : undefined,
+        }));
 
-      setTasks(prev => [...newTasks, ...prev]);
-      
-      setRecordings(prev => prev.map(r => 
-        r.id === recording.id ? { ...r, transcript } : r
-      ));
+        setTasks(prev => [...newTasks, ...prev]);
+        
+        setRecordings(prev => prev.map(r => 
+          r.id === recording.id ? { ...r, transcript } : r
+        ));
+      }
       
       setTranscribing(false);
     }, 2000);
@@ -601,6 +603,16 @@ export default function VoiceTask() {
                         <audio controls className="h-8">
                           <source src={recording.url} type="audio/webm" />
                         </audio>
+                        {!recording.transcript && (
+                          <button
+                            onClick={() => transcribeRecording(recording)}
+                            disabled={transcribing}
+                            className="px-3 py-1.5 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            {transcribing ? 'Transcribing...' : 'Transcribe'}
+                          </button>
+                        )}
                         <button
                           onClick={() => deleteRecording(recording.id)}
                           className="text-red-400 hover:text-red-300"
