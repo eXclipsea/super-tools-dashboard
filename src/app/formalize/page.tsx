@@ -70,14 +70,25 @@ export default function Formalize() {
       {showBanner && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 backdrop-blur-xl border-b border-amber-400/20">
           <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
-            <a
-              href="https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_aarch64.dmg"
-              className="flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
-            >
-              <Download className="w-3.5 h-3.5 text-amber-400" />
-              <span>Get <strong>Formalize</strong> for Mac</span>
-              <span className="text-amber-400 font-medium ml-1">Download &rarr;</span>
-            </a>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_aarch64.dmg"
+                className="flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
+              >
+                <Download className="w-3.5 h-3.5 text-amber-400" />
+                <span>Get <strong>Formalize</strong> for Mac</span>
+                <span className="text-amber-400 font-medium ml-1">&rarr;</span>
+              </a>
+              <span className="text-white/30">|</span>
+              <a
+                href="https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_x64-setup.exe"
+                className="flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
+              >
+                <Download className="w-3.5 h-3.5 text-amber-400" />
+                <span>Get <strong>Formalize</strong> for Windows</span>
+                <span className="text-amber-400 font-medium ml-1">&rarr;</span>
+              </a>
+            </div>
             <button
               onClick={() => setShowBanner(false)}
               className="text-white/30 hover:text-white/60 transition-colors p-1"

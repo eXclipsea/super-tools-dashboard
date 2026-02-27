@@ -34,6 +34,7 @@ const apps = [
     gradient: 'from-cyan-500/20 to-cyan-500/5',
     route: '/quickreceipt',
     dmg: 'https://github.com/eXclipsea/QuickReceipt/releases/download/v0.1.0/QuickReceipt_0.1.0_aarch64.dmg',
+    exe: 'https://github.com/eXclipsea/QuickReceipt/releases/download/v0.1.0/QuickReceipt_0.1.0_x64-setup.exe',
   },
   {
     name: 'Kitchen Commander',
@@ -44,6 +45,7 @@ const apps = [
     gradient: 'from-green-500/20 to-green-500/5',
     route: '/kitchen-commander',
     dmg: 'https://github.com/eXclipsea/kitchen-commander/releases/download/v0.1.0/KitchenCommander_0.1.0_aarch64.dmg',
+    exe: 'https://github.com/eXclipsea/kitchen-commander/releases/download/v0.1.0/KitchenCommander_0.1.0_x64-setup.exe',
   },
   {
     name: 'PersonaSync',
@@ -54,6 +56,7 @@ const apps = [
     gradient: 'from-rose-500/20 to-rose-500/5',
     route: '/personasync',
     dmg: 'https://github.com/eXclipsea/persona-drafter/releases/download/v0.1.0/PersonaSync_0.1.0_aarch64.dmg',
+    exe: 'https://github.com/eXclipsea/persona-drafter/releases/download/v0.1.0/PersonaSync_0.1.0_x64-setup.exe',
   },
   {
     name: 'VoiceTask',
@@ -64,6 +67,7 @@ const apps = [
     gradient: 'from-violet-500/20 to-violet-500/5',
     route: '/voicetask',
     dmg: 'https://github.com/eXclipsea/voice-task/releases/download/v0.1.0/VoiceTask_0.1.0_aarch64.dmg',
+    exe: 'https://github.com/eXclipsea/voice-task/releases/download/v0.1.0/VoiceTask_0.1.0_x64-setup.exe',
   },
   {
     name: 'Argument Settler',
@@ -74,6 +78,7 @@ const apps = [
     gradient: 'from-orange-500/20 to-orange-500/5',
     route: '/argument-settler',
     dmg: 'https://github.com/eXclipsea/neutral-ref/releases/download/v0.1.0/ArgumentSettler_0.1.0_aarch64.dmg',
+    exe: 'https://github.com/eXclipsea/neutral-ref/releases/download/v0.1.0/ArgumentSettler_0.1.0_x64-setup.exe',
   },
   {
     name: 'Formalize',
@@ -84,6 +89,7 @@ const apps = [
     gradient: 'from-amber-500/20 to-amber-500/5',
     route: '/formalize',
     dmg: 'https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_aarch64.dmg',
+    exe: 'https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_x64-setup.exe',
   }
 ];
 
@@ -368,11 +374,18 @@ export default function Dashboard() {
                       className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
                     >
                       <Apple className="w-5 h-5" />
-                      Get Super Tools for Mac
+                      Download for Mac
                     </button>
-                    <button className="px-8 py-4 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl transition-all duration-300">
-                      Coming to Windows
-                    </button>
+                    <a
+                      href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_x64-setup.exe"
+                      className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 5.5A2.5 2.5 0 015.5 3h13A2.5 2.5 0 0121 5.5v13a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 18.5v-13zM5.5 5a.5.5 0 00-.5.5v13a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-13a.5.5 0 00-.5-.5h-13z"/>
+                        <path d="M10 8h4v1.5h-4V8zm-2.5 3h9v1.5h-9V11.5zm0 3h9V16h-9v-1.5z"/>
+                      </svg>
+                      Download for Windows
+                    </a>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
