@@ -7,6 +7,7 @@ import {
   Users, 
   Mic, 
   Scale,
+  Quote,
   ArrowRight,
   ArrowUpRight,
   Download,
@@ -15,9 +16,13 @@ import {
   Cpu,
   Apple,
   Check,
-  X
+  X,
+  User,
+  Mail,
+  Lock
 } from 'lucide-react';
 import Link from 'next/link';
+import { getCurrentUser, setCurrentUser as saveUserToStorage, logout, findUser, createUser } from '@/lib/auth';
 
 const apps = [
   {
@@ -69,6 +74,16 @@ const apps = [
     gradient: 'from-orange-500/20 to-orange-500/5',
     route: '/argument-settler',
     dmg: 'https://github.com/eXclipsea/neutral-ref/releases/download/v0.1.0/ArgumentSettler_0.1.0_aarch64.dmg',
+  },
+  {
+    name: 'Formalize',
+    tagline: 'Speak with eloquence.',
+    description: 'Transform casual text into formal language, Shakespeare quotes, or famous person quotes. Perfect for professional emails or adding flair.',
+    icon: Quote,
+    color: '#fbbf24',
+    gradient: 'from-amber-500/20 to-amber-500/5',
+    route: '/formalize',
+    dmg: 'https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_aarch64.dmg',
   }
 ];
 
@@ -79,9 +94,23 @@ export default function Dashboard() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Auth state
+  const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginView, setLoginView] = useState<'login' | 'signup'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
   }, []);
 
   const handlePurchase = async () => {
@@ -112,6 +141,59 @@ export default function Dashboard() {
     }
   };
 
+  // Auth handlers
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    const user = findUser(email, password);
+    if (user) {
+      saveUserToStorage(user);
+      setCurrentUser(user);
+      setShowLoginModal(false);
+      if (pendingRoute) {
+        window.location.href = pendingRoute;
+        setPendingRoute(null);
+      }
+    } else {
+      setAuthError('Invalid email or password.');
+    }
+  };
+
+  const handleSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    const success = createUser(email, name, password);
+    if (!success) {
+      setAuthError('An account with this email already exists.');
+      return;
+    }
+    const user = { email, name };
+    saveUserToStorage(user);
+    setCurrentUser(user);
+    setShowLoginModal(false);
+    if (pendingRoute) {
+      window.location.href = pendingRoute;
+      setPendingRoute(null);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setCurrentUser(null);
+    setEmail('');
+    setPassword('');
+    setName('');
+  };
+
+  const handleAppClick = (route: string) => {
+    if (!currentUser) {
+      setPendingRoute(route);
+      setShowLoginModal(true);
+      return false;
+    }
+    return true;
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-blue-500/30">
       {/* Nav */}
@@ -124,14 +206,24 @@ export default function Dashboard() {
             <span className="font-semibold text-[15px] tracking-tight">Super Tools</span>
           </div>
           <div className="flex items-center gap-6">
-            <a href="#apps" className="text-[13px] text-white/50 hover:text-white transition-colors">Apps</a>
-            <a href="#download" className="text-[13px] text-white/50 hover:text-white transition-colors">Download</a>
-            <a
-              href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg"
-              className="text-[13px] font-medium bg-white text-black px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors"
-            >
-              Get the app
-            </a>
+            {currentUser ? (
+              <>
+                <span className="text-[13px] text-white/50">Welcome, {currentUser.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-[13px] text-white/50 hover:text-white transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="text-[13px] font-medium bg-white text-black px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -210,9 +302,9 @@ export default function Dashboard() {
           {apps.map((app) => {
             const Icon = app.icon;
             return (
-              <Link
+              <div
                 key={app.name}
-                href={app.route}
+                onClick={() => handleAppClick(app.route) && (window.location.href = app.route)}
                 onMouseEnter={() => setHoveredApp(app.name)}
                 onMouseLeave={() => setHoveredApp(null)}
                 className="group relative bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-2xl border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer overflow-hidden block"
@@ -239,7 +331,7 @@ export default function Dashboard() {
                   <p className="text-sm text-white/60 mb-4">{app.tagline}</p>
                   <p className="text-sm text-white/40 leading-relaxed">{app.description}</p>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
@@ -341,7 +433,7 @@ export default function Dashboard() {
                 <Apple className="w-6 h-6 text-blue-400" />
                 <div>
                   <p className="font-medium">Super Tools Dashboard</p>
-                  <p className="text-sm text-white/60">Complete desktop app with all 5 tools</p>
+                  <p className="text-sm text-white/60">Complete desktop app with all 6 tools</p>
                 </div>
               </div>
               
@@ -356,7 +448,7 @@ export default function Dashboard() {
               <div className="space-y-2 text-sm text-white/60">
                 <div className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-400" />
-                  <span>All 5 AI-powered tools</span>
+                  <span>All 6 AI-powered tools</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-400" />
@@ -394,6 +486,102 @@ export default function Dashboard() {
             <p className="text-xs text-white/40 text-center mt-4">
               Secure payment powered by Stripe
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-8 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold">
+                {loginView === 'login' ? 'Sign In' : 'Create Account'}
+              </h3>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="text-white/40 hover:text-white/60 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {authError && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm">{authError}</p>
+              </div>
+            )}
+
+            <form onSubmit={loginView === 'login' ? handleLogin : handleSignup} className="space-y-4">
+              {loginView === 'signup' && (
+                <div>
+                  <label className="block text-sm text-white/60 mb-2">Name</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                      className="w-full bg-black border border-white/[0.06] rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm text-white/60 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full bg-black border border-white/[0.06] rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-white/60 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-black border border-white/[0.06] rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-white text-black font-semibold py-3 px-4 rounded-lg hover:bg-white/90 transition-colors"
+              >
+                {loginView === 'login' ? 'Sign In' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-white/50">
+                {loginView === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+                <button
+                  onClick={() => {
+                    setLoginView(loginView === 'login' ? 'signup' : 'login');
+                    setAuthError('');
+                  }}
+                  className="text-white hover:underline"
+                >
+                  {loginView === 'login' ? 'Sign up' : 'Sign in'}
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       )}
