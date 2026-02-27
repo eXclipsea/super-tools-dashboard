@@ -377,7 +377,7 @@ export default function Dashboard() {
                       Download for Mac
                     </button>
                     <a
-                      href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_x64-setup.exe"
+                      href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/Super%20Tools_0.1.0_x64-setup.exe"
                       className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
                     >
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
