@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOpenAI, openAIError } from '@/lib/openai';
+import { getGroq, openAIError } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
-    const openai = getOpenAI();
+    const groq = getGroq();
     const { image } = await request.json();
 
     if (!image) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.2-11b-vision-preview',
       messages: [
         {
           role: 'user',
@@ -19,13 +19,12 @@ export async function POST(request: NextRequest) {
             { type: 'image_url', image_url: { url: image, detail: 'high' } },
             {
               type: 'text',
-              text: 'Look at this screenshot of a messaging app (like iMessage). Extract ONLY the messages sent by the user (typically shown in blue bubbles on iPhone). Ignore messages from other people (gray bubbles). Return JSON: {"hasText": true|false, "reason": "brief note", "text": "extracted user messages only, separated by newlines"}. If no blue/user messages visible, set hasText to false. Only return JSON.',
+              text: 'Look at this screenshot of a messaging app. Extract ONLY the messages sent by the user (blue bubbles). Ignore others (gray bubbles). Return JSON: {"hasText": true|false, "reason": "brief note", "text": "user messages only"}.',
             },
           ],
         },
       ],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
+      max_tokens: 400,
     });
 
     const result = JSON.parse(response.choices[0].message.content!);

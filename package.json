@@ -12,6 +12,7 @@
     "tauri:build": "tauri build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@types/stripe": "^8.0.416",
     "lucide-react": "^0.475.0",
     "next": "^16.1.6",

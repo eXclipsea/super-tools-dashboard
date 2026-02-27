@@ -1,19 +1,41 @@
 import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 
+// OpenAI client (for GPT-4o vision tasks)
 export function getOpenAI(): OpenAI {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('MISSING_KEY');
+    throw new Error('MISSING_OPENAI_KEY');
   }
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
 
-export function openAIError(error: any): NextResponse {
-  console.error('[OpenAI Error]', error?.name, error?.message);
+// GROQ client (for Llama models - better style mimicry)
+export function getGroq(): OpenAI {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error('MISSING_GROQ_KEY');
+  }
+  return new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: 'https://api.groq.com/openai/v1',
+  });
+}
 
-  if (error?.message === 'MISSING_KEY') {
+// Claude client (for reasoning and creative tasks)
+export function getClaude(): Anthropic {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error('MISSING_ANTHROPIC_KEY');
+  }
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+
+export function openAIError(error: any): NextResponse {
+  console.error('[AI Error]', error?.name, error?.message);
+
+  if (error?.message?.includes('MISSING_')) {
+    const service = error.message.replace('MISSING_', '').replace('_KEY', '');
     return NextResponse.json(
-      { error: 'OpenAI API key is not configured on the server. Go to Vercel → your project → Settings → Environment Variables and add OPENAI_API_KEY.' },
+      { error: `${service} API key is not configured. Check your environment variables.` },
       { status: 500 }
     );
   }
@@ -25,21 +47,21 @@ export function openAIError(error: any): NextResponse {
     error?.cause?.code === 'ECONNREFUSED'
   ) {
     return NextResponse.json(
-      { error: 'Could not reach OpenAI. Your API key may be missing or invalid — check OPENAI_API_KEY in your Vercel environment variables.' },
+      { error: 'Could not reach AI service. Check your API key and internet connection.' },
       { status: 503 }
     );
   }
 
   if (error?.status === 401 || error?.name === 'AuthenticationError') {
     return NextResponse.json(
-      { error: 'Invalid OpenAI API key. Check that OPENAI_API_KEY is correct in your Vercel environment variables.' },
+      { error: 'Invalid API key. Check that your API key is correct in environment variables.' },
       { status: 401 }
     );
   }
 
   if (error?.status === 429 || error?.name === 'RateLimitError') {
     return NextResponse.json(
-      { error: 'OpenAI rate limit hit. Wait a moment and try again.' },
+      { error: 'Rate limit hit. Wait a moment and try again.' },
       { status: 429 }
     );
   }
