@@ -21,7 +21,32 @@ export async function POST(request: NextRequest) {
             { type: 'image_url', image_url: { url: image, detail: 'high' } },
             {
               type: 'text',
-              text: `Today is ${today}. Is this a receipt, invoice, or bill? Return JSON: {"isReceipt": true|false, "reason": "what you see", "storeName": "string", "date": "YYYY-MM-DD", "total": number, "category": "Food & Dining|Shopping|Transportation|Healthcare|Entertainment|Other", "items": [{"name": "string", "amount": number}]}. If not a receipt, set isReceipt false and leave other fields empty. Only return JSON.`,
+              text: `You are a receipt analysis expert. Today is ${today}. 
+
+Analyze this image carefully. Is it a receipt, invoice, or bill? Look for:
+- Store/merchant name (usually at top)
+- Date of purchase
+- Total amount (look for "Total", "Amount Due", final number)
+- Itemized list with names and prices
+- Category (Food & Dining, Shopping, Transportation, Healthcare, Entertainment, or Other)
+
+Return JSON with these exact fields:
+{
+  "isReceipt": true|false,
+  "reason": "brief explanation of what you see in the image",
+  "storeName": "the merchant name or 'Unknown Store'",
+  "date": "YYYY-MM-DD format, or ${today} if unclear",
+  "total": number (just the numeric value, no $ sign),
+  "category": "one of: Food & Dining|Shopping|Transportation|Healthcare|Entertainment|Other",
+  "items": [
+    {"name": "item description", "amount": number},
+    {"name": "item description", "amount": number}
+  ]
+}
+
+If this is NOT a receipt (photo of random objects, document, etc), set isReceipt to false and leave other fields empty.
+If the receipt is blurry or unreadable, still try your best to extract what you can see.
+Only return valid JSON.`,
             },
           ],
         },

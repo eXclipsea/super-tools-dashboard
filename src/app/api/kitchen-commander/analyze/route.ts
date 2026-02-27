@@ -21,7 +21,38 @@ export async function POST(request: NextRequest) {
             { type: 'image_url', image_url: { url: image, detail: 'high' } },
             {
               type: 'text',
-              text: `Today is ${today}. Analyze this image and determine if it shows food items (fridge, pantry, kitchen, groceries). Return JSON: {"canDetect": true|false, "reason": "brief explanation of what you see", "items": [{"name": "string", "quantity": "string", "category": "Produce|Dairy|Meat|Pantry|Frozen|Beverages", "expiryDate": "YYYY-MM-DD"}]}. If you cannot clearly see food items, set canDetect to false and return empty items. Only return the JSON.`,
+              text: `You are a food inventory expert. Today is ${today}.
+
+Analyze this image carefully. Does it show food items, groceries, fridge contents, pantry items, or kitchen ingredients? Look for:
+- Packaged foods (boxes, cans, bags)
+- Fresh produce (fruits, vegetables)
+- Dairy items (milk, cheese, yogurt)
+- Meats and proteins
+- Beverages
+- Condiments and sauces
+
+For each food item you can identify, estimate:
+- Name (be specific: "Organic Whole Milk" not just "Milk")
+- Quantity (e.g., "1 gallon", "12 count", "2 lbs", "1 bunch")
+- Category: Produce | Dairy | Meat | Pantry | Frozen | Beverages
+- Estimated expiry date (best guess based on typical shelf life, format YYYY-MM-DD)
+
+Return JSON with these exact fields:
+{
+  "canDetect": true|false,
+  "reason": "brief explanation of what food items you see",
+  "items": [
+    {
+      "name": "specific food item name",
+      "quantity": "amount with units",
+      "category": "Produce|Dairy|Meat|Pantry|Frozen|Beverages",
+      "expiryDate": "YYYY-MM-DD"
+    }
+  ]
+}
+
+If you cannot clearly see food items (photo is blurry, dark, or shows non-food objects), set canDetect to false and return empty items.
+Only return valid JSON.`,
             },
           ],
         },

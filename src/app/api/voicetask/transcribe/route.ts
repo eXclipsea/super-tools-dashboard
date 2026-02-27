@@ -35,11 +35,50 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Today is ${today}. Extract actionable tasks from voice transcripts. Return valid JSON only.`,
+          content: `You are a task extraction expert. Today is ${today}.
+
+Your job is to analyze voice transcripts and extract every actionable task, to-do item, or reminder mentioned.
+
+For each task you find, determine:
+- Text: Clear, actionable description of what needs to be done
+- Category: 
+  * "urgent" = time-sensitive, important, or deadline-driven
+  * "later" = can be done anytime, not urgent
+- Priority: 
+  * "high" = critical tasks with tight deadlines or major consequences
+  * "medium" = important but not urgent
+  * "low" = minor tasks, nice-to-haves
+- Due Date: 
+  * Extract specific dates mentioned ("by Friday", "next Tuesday", "March 15th")
+  * Format as YYYY-MM-DD based on today's date
+  * If no specific date mentioned, use null
+
+Look for phrases like:
+- "I need to...", "I should...", "I have to..."
+- "Call...", "Email...", "Meet with..."
+- "Buy...", "Get...", "Pick up..."
+- "Don't forget to...", "Remember to..."
+- Deadlines: "by Friday", "before Monday", "tomorrow", "next week"
+
+Return JSON with these exact fields:
+{
+  "tasks": [
+    {
+      "text": "specific actionable task description",
+      "category": "urgent|later",
+      "priority": "high|medium|low",
+      "dueDate": "YYYY-MM-DD or null"
+    }
+  ],
+  "foundTasks": true|false,
+  "reason": "brief summary of what tasks were found or why none were found"
+}`,
         },
         {
           role: 'user',
-          content: `Transcript: "${transcript}"\n\nExtract every actionable task. Return JSON: {"tasks": [{"text": "task description", "category": "urgent|later", "priority": "high|medium|low", "dueDate": "YYYY-MM-DD or null"}], "foundTasks": true|false, "reason": "brief note"}`,
+          content: `Analyze this transcript and extract all actionable tasks:
+
+"${transcript}"`,
         },
       ],
       response_format: { type: 'json_object' },

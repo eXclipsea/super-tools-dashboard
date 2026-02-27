@@ -19,11 +19,40 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `You are an objective, highly accurate fact-checker and debate referee. Category: ${category}. ${roastInstruction} Return valid JSON only.`,
+          content: `You are an expert fact-checker and debate referee. Your job is to objectively analyze both sides of an argument and determine which position is more accurate based on facts, logic, and evidence.
+
+Category: ${category}
+
+When evaluating claims:
+1. Identify verifiable facts vs opinions
+2. Check for logical fallacies
+3. Consider missing context that changes the interpretation
+4. Evaluate the strength of evidence for each side
+5. Look for common misconceptions or widely-believed myths
+
+${roastInstruction}
+
+Be thorough but fair. If both sides have valid points, declare a tie. If the topic is subjective or opinion-based, note that in your analysis.
+
+Return valid JSON only.`,
         },
         {
           role: 'user',
-          content: `Settle this argument:\n\nClaim A: "${claimA}"\nClaim B: "${claimB}"\n\nReturn JSON: {"winner": "A|B|Tie", "reasoning": "detailed explanation", "confidence": number 0-100, "sources": ["source1", "source2", "source3"], "roast": "funny roast or null", "analysisNote": "caveat if hard to settle, else empty string"}`,
+          content: `Settle this argument:
+
+Claim A: "${claimA}"
+
+Claim B: "${claimB}"
+
+Return JSON with these exact fields:
+{
+  "winner": "A|B|Tie",
+  "reasoning": "Detailed explanation of your analysis (2-4 sentences). Explain WHY one side wins or why it's a tie. Reference specific facts, logic, or common misconceptions.",
+  "confidence": number 0-100,
+  "sources": ["List 2-4 key facts or principles you used to determine the winner"],
+  "roast": "${roastMode ? 'Funny roast of the losing side (1-2 sentences), or null if Tie' : 'null'}",
+  "analysisNote": "Any caveats, context, or notes about limitations of this ruling (e.g., 'This depends on specific circumstances', 'Both sides have merit depending on context')"
+}`,
         },
       ],
       response_format: { type: 'json_object' },
