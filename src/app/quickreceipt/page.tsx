@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Camera, User, Mail, Lock, ArrowRight, Download, X, ArrowLeft, Upload, LogOut, Trash2, Sparkles, Receipt, TrendingUp, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { getCurrentUser, setCurrentUser as saveUserToStorage, logout, findUser, createUser } from '@/lib/auth';
 
 interface ReceiptItem {
   name: string;
@@ -50,13 +51,10 @@ export default function QuickReceipt() {
 
   // Load session and receipts from localStorage on mount
   useEffect(() => {
-    const session = localStorage.getItem('qr_session');
-    if (session) {
-      try {
-        const user = JSON.parse(session) as CurrentUser;
-        setCurrentUser(user);
-        setView('dashboard');
-      } catch {}
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+      setView('dashboard');
     }
 
     const saved = localStorage.getItem('qr_receipts');
@@ -77,12 +75,10 @@ export default function QuickReceipt() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const users: any[] = JSON.parse(localStorage.getItem('qr_users') || '[]');
-    const user = users.find(u => u.email === email && u.password === btoa(password));
+    const user = findUser(email, password);
     if (user) {
-      const session = { email: user.email, name: user.name };
-      localStorage.setItem('qr_session', JSON.stringify(session));
-      setCurrentUser(session);
+      saveUserToStorage(user);
+      setCurrentUser(user);
       setView('dashboard');
     } else {
       setAuthError('Invalid email or password.');
@@ -92,22 +88,19 @@ export default function QuickReceipt() {
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const users: any[] = JSON.parse(localStorage.getItem('qr_users') || '[]');
-    if (users.find((u: any) => u.email === email)) {
+    const success = createUser(email, name, password);
+    if (!success) {
       setAuthError('An account with this email already exists.');
       return;
     }
-    const newUser = { email, name, password: btoa(password) };
-    users.push(newUser);
-    localStorage.setItem('qr_users', JSON.stringify(users));
-    const session = { email, name };
-    localStorage.setItem('qr_session', JSON.stringify(session));
-    setCurrentUser(session);
+    const user = { email, name };
+    saveUserToStorage(user);
+    setCurrentUser(user);
     setView('dashboard');
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('qr_session');
+    logout();
     setCurrentUser(null);
     setEmail('');
     setPassword('');

@@ -118,8 +118,8 @@ export default function Dashboard() {
       <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#0a0a0a]/80 border-b border-white/[0.04]">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
+            <div className="w-7 h-7 rounded-lg bg-black border border-white/20 flex items-center justify-center">
+              <div className="w-3 h-3 rounded-full bg-blue-500" />
             </div>
             <span className="font-semibold text-[15px] tracking-tight">Super Tools</span>
           </div>

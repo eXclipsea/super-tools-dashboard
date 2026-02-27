@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Mic, Square, Play, Trash2, CheckCircle, Clock, AlertTriangle, Sparkles, Save, List, Calendar, Settings, Download, X, ArrowLeft } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Mic, Square, Play, Trash2, CheckCircle, Clock, AlertTriangle, Sparkles, Save, List, Calendar, Settings, Download, X, ArrowLeft, User } from 'lucide-react';
 import Link from 'next/link';
+import { getCurrentUser, logout } from '@/lib/auth';
 
 interface Task {
   id: string;
@@ -32,9 +33,24 @@ export default function VoiceTask() {
   const [transcribeError, setTranscribeError] = useState('');
   const [transcribeNotice, setTranscribeNotice] = useState('');
   const [loadingStep, setLoadingStep] = useState('');
+  const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioBlobRef = useRef<Blob | null>(null);
+
+  // Load user session on mount
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setCurrentUser(null);
+    window.location.href = '/';
+  };
 
   const startRecording = async () => {
     try {
@@ -185,16 +201,26 @@ export default function VoiceTask() {
 
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
-        <div className="mb-10">
-          <Link href="/" className="flex items-center gap-3 mb-2 hover:opacity-80 transition-opacity inline-block">
-            <ArrowLeft className="w-4 h-4 text-white/50" />
-            <span className="text-[13px] text-white/50">Back to Super Tools</span>
-          </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <Mic className="w-6 h-6 text-violet-400" />
-            <h1 className="text-2xl font-semibold tracking-tight">VoiceTask</h1>
+        <div className="mb-10 flex items-start justify-between">
+          <div>
+            <Link href="/" className="flex items-center gap-3 mb-2 hover:opacity-80 transition-opacity inline-block">
+              <ArrowLeft className="w-4 h-4 text-white/50" />
+              <span className="text-[13px] text-white/50">Back to Super Tools</span>
+            </Link>
+            <div className="flex items-center gap-3 mb-2">
+              <Mic className="w-6 h-6 text-violet-400" />
+              <h1 className="text-2xl font-semibold tracking-tight">VoiceTask</h1>
+            </div>
+            <p className="text-neutral-500">{currentUser ? `Welcome back, ${currentUser.name}` : 'AI voice-to-text task organizer'}</p>
           </div>
-          <p className="text-neutral-500">AI voice-to-text task organizer</p>
+          {currentUser && (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-violet-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">{currentUser.name.charAt(0).toUpperCase()}</span>
+              </div>
+              <button onClick={handleLogout} className="text-white/50 hover:text-white text-sm">Logout</button>
+            </div>
+          )}
         </div>
 
         {/* Navigation Tabs */}

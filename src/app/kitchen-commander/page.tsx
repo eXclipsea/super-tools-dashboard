@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Camera, Upload, ChefHat, Plus, X, Calendar, AlertCircle, Sparkles, Trash2, Search, Download, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Camera, Upload, ChefHat, Plus, X, Calendar, AlertCircle, Sparkles, Trash2, Search, Download, ArrowLeft, User } from 'lucide-react';
 import Link from 'next/link';
+import { getCurrentUser, logout } from '@/lib/auth';
 
 interface PantryItem {
   id: string;
@@ -44,6 +45,21 @@ export default function KitchenCommander() {
   const [analyzeNotice, setAnalyzeNotice] = useState('');
   const [loadingStep, setLoadingStep] = useState('');
   const [recipeError, setRecipeError] = useState('');
+  const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
+
+  // Load user session on mount
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setCurrentUser(null);
+    window.location.href = '/';
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -190,16 +206,26 @@ export default function KitchenCommander() {
 
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
-        <div className="mb-10">
-          <Link href="/" className="flex items-center gap-3 mb-2 hover:opacity-80 transition-opacity inline-block">
-            <ArrowLeft className="w-4 h-4 text-white/50" />
-            <span className="text-[13px] text-white/50">Back to Super Tools</span>
-          </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <ChefHat className="w-6 h-6 text-green-400" />
-            <h1 className="text-2xl font-semibold tracking-tight">Kitchen Commander</h1>
+        <div className="mb-10 flex items-start justify-between">
+          <div>
+            <Link href="/" className="flex items-center gap-3 mb-2 hover:opacity-80 transition-opacity inline-block">
+              <ArrowLeft className="w-4 h-4 text-white/50" />
+              <span className="text-[13px] text-white/50">Back to Super Tools</span>
+            </Link>
+            <div className="flex items-center gap-3 mb-2">
+              <ChefHat className="w-6 h-6 text-green-400" />
+              <h1 className="text-2xl font-semibold tracking-tight">Kitchen Commander</h1>
+            </div>
+            <p className="text-neutral-500">{currentUser ? `Welcome back, ${currentUser.name}` : 'AI-powered pantry & recipe management'}</p>
           </div>
-          <p className="text-neutral-500">AI-powered pantry & recipe management</p>
+          {currentUser && (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">{currentUser.name.charAt(0).toUpperCase()}</span>
+              </div>
+              <button onClick={handleLogout} className="text-white/50 hover:text-white text-sm">Logout</button>
+            </div>
+          )}
         </div>
 
         {/* Navigation Tabs */}

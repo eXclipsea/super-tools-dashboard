@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const { image } = await request.json();
 
     if (!image) {
-      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+      return NextResponse.json({ error: 'Please upload an image first' }, { status: 400 });
     }
 
     const today = new Date().toISOString().split('T')[0];
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     if (!result.isReceipt) {
       return NextResponse.json(
-        { error: `This doesn't look like a receipt. ${result.reason || 'Please upload a clear photo of a receipt or invoice.'}`, isReceipt: false },
+        { error: `Please upload an actual receipt. ${result.reason || 'Try a clearer photo of a receipt or invoice.'}`, isReceipt: false },
         { status: 422 }
       );
     }
