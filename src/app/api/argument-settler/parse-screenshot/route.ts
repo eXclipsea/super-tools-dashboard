@@ -19,7 +19,25 @@ export async function POST(request: NextRequest) {
             { type: 'image_url', image_url: { url: image, detail: 'high' } },
             {
               type: 'text',
-              text: 'You are an expert at analyzing debates and arguments from screenshots.\n\nLook at this screenshot carefully. It likely shows:\n- A text conversation with two people disagreeing\n- A social media post with conflicting opinions\n- A debate topic or poll\n- Any situation where two opposing viewpoints are presented\n\nIdentify the TWO main opposing positions/claims being argued.\n\nReturn JSON with these exact fields:\n{\n  "claimA": "First position/opinion being argued (be specific and clear)",\n  "claimB": "Second position/opinion being argued (the opposing view)",\n  "context": "Brief description of where this argument is happening (iMessage, Twitter, Reddit, etc)"\n}\n\nIf you cannot identify two clear opposing claims, set both to "Unable to determine".',\n            },
+              text: `You are an expert at analyzing debates and arguments from screenshots.
+
+Look at this screenshot carefully. It likely shows:
+- A text conversation with two people disagreeing
+- A social media post with conflicting opinions
+- A debate topic or poll
+- Any situation where two opposing viewpoints are presented
+
+Identify the TWO main opposing positions/claims being argued.
+
+Return JSON with these exact fields:
+{
+  "claimA": "First position/opinion being argued (be specific and clear)",
+  "claimB": "Second position/opinion being argued (the opposing view)",
+  "context": "Brief description of where this argument is happening (iMessage, Twitter, Reddit, etc)"
+}
+
+If you cannot identify two clear opposing claims, set both to "Unable to determine".`,
+            },
           ],
         },
       ],
