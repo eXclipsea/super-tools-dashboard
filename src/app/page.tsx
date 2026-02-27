@@ -376,15 +376,15 @@ export default function Dashboard() {
                       <Apple className="w-5 h-5" />
                       Download for Mac
                     </button>
-                    <button
-                      disabled
-                      className="px-8 py-4 bg-white/5 text-white/30 font-semibold rounded-xl cursor-not-allowed flex items-center justify-center gap-3"
+                    <a
+                      href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_x64-setup.exe"
+                      className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
                     >
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
                       </svg>
-                      Windows (Coming Soon)
-                    </button>
+                      Download for Windows
+                    </a>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
