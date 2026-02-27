@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
             { type: 'image_url', image_url: { url: image, detail: 'high' } },
             {
               type: 'text',
-              text: 'Look at this screenshot and extract any message, email, or conversation text. Return JSON: {"hasText": true|false, "reason": "brief note about what you see", "text": "extracted message text"}. If no readable text, set hasText to false. Only return JSON.',
+              text: 'Look at this screenshot of a messaging app (like iMessage). Extract ONLY the messages sent by the user (typically shown in blue bubbles on iPhone). Ignore messages from other people (gray bubbles). Return JSON: {"hasText": true|false, "reason": "brief note", "text": "extracted user messages only, separated by newlines"}. If no blue/user messages visible, set hasText to false. Only return JSON.',
             },
           ],
         },

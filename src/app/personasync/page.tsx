@@ -282,6 +282,12 @@ Example 2: Just wanted to follow up on...
 Example 3: lol that's hilarious..."
                     className="w-full h-64 p-4 bg-black border border-neutral-800 text-white rounded-lg focus:border-rose-400/50 focus:outline-none resize-none"
                   />
+                  {examples.length > 0 && examples.length < 200 && (
+                    <div className="mt-3 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                      <p className="text-amber-400 text-sm font-medium">⚠️ Low text input</p>
+                      <p className="text-amber-300 text-sm mt-1">For best results, provide at least 200+ characters of examples (longer emails, multiple messages). Short texts make it harder to detect your unique style.</p>
+                    </div>
+                  )}
                 </div>
 
                 <button
