@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getClaude, openAIError } from '@/lib/openai';
+import { getOpenAI, openAIError } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
-    const anthropic = getClaude();
+    const openai = getOpenAI();
     const { text, style } = await request.json();
 
     if (!text) {
@@ -22,10 +22,13 @@ export async function POST(request: NextRequest) {
 
     const selectedPrompt = stylePrompts[style] || stylePrompts.formal;
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 400,
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
       messages: [
+        {
+          role: 'system',
+          content: `You are a master of literary styles. Transform text while keeping core meaning intact. Return ONLY the transformed text, no explanations or quotation marks.`,
+        },
         {
           role: 'user',
           content: `Transform this text into ${style} style.
@@ -41,9 +44,11 @@ Rules:
 Text to transform: "${text.substring(0, 500)}"`,
         },
       ],
+      max_tokens: 400,
+      temperature: 0.8,
     });
 
-    const transformedText = message.content[0].type === 'text' ? message.content[0].text.trim() : '';
+    const transformedText = response.choices[0].message.content?.trim() || '';
     return NextResponse.json({ transformedText });
   } catch (error: any) {
     return openAIError(error);

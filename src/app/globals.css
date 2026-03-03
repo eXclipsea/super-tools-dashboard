@@ -13,3 +13,12 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Hide Vercel injected toolbar */
+vercel-live-feedback,
+#__vercel-live-feedback,
+[data-vercel-toolbar],
+.__vercel-toolbar,
+vercel-toolbar {
+  display: none !important;
+}

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-02-25.clover' as any,
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +16,7 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: productName || 'Super Tools Dashboard',
-              description: 'All 5 AI-powered tools. Lifetime access. Free updates.',
+              description: 'All AI-powered tools. Lifetime access. Free updates.',
             },
             unit_amount: 299, // $2.99
           },

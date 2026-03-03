@@ -32,8 +32,8 @@ export default function SuccessPage() {
               <Check className="w-8 h-8 text-green-400" />
             </div>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Payment Successful!</h1>
-          <p className="text-neutral-500">Thank you for purchasing Super Tools Dashboard. Your download is ready.</p>
+          <h1 className="text-3xl font-semibold tracking-tight mb-2">Download Ready!</h1>
+          <p className="text-neutral-500">Thanks for choosing Super Tools. Your download is ready.</p>
         </div>
 
         <div className="bg-neutral-900 rounded-xl p-8 border border-neutral-800 mb-8">
@@ -50,7 +50,7 @@ export default function SuccessPage() {
               Download for Mac
             </a>
             <a
-              href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_x64-setup.exe"
+              href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/Super.Tools_0.1.0_x64-setup.exe"
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
             >
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -60,9 +60,6 @@ export default function SuccessPage() {
             </a>
           </div>
           
-          <p className="text-xs text-neutral-500 text-center mb-2">
-            Session ID: {sessionId || 'N/A'}
-          </p>
           <div className="text-sm text-neutral-400 text-center">
             <p>All 6 AI-powered tools in one desktop app</p>
             <p>Free lifetime updates • No subscription</p>

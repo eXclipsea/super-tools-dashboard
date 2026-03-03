@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Scale, Search, Flame, ExternalLink, History, Trophy, Users, Zap, Trash2, X, Copy, Check, ImagePlus, Download, ArrowLeft } from 'lucide-react';
+import { Scale, Search, Flame, ExternalLink, History, Trophy, Users, Zap, Trash2, X, Copy, Check, ImagePlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface Verdict {
@@ -25,7 +25,6 @@ const CATEGORIES = ['General', 'Science', 'History', 'Politics', 'Sports', 'Pop 
 
 export default function ArgumentSettler() {
   const [activeTab, setActiveTab] = useState<'settle' | 'history' | 'leaderboard' | 'categories'>('settle');
-  const [showBanner, setShowBanner] = useState(true);
   const [claimA, setClaimA] = useState('');
   const [claimB, setClaimB] = useState('');
   const [category, setCategory] = useState('General');
@@ -131,40 +130,18 @@ export default function ArgumentSettler() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Download Popup */}
-      {showBanner && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-orange-500/10 backdrop-blur-xl border-b border-orange-400/20">
-          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
-            <a
-              href="https://github.com/eXclipsea/neutral-ref/releases/download/v0.1.0/ArgumentSettler_0.1.0_aarch64.dmg"
-              className="flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
-            >
-              <Download className="w-3.5 h-3.5 text-orange-400" />
-              <span>Get <strong>Argument Settler</strong> for Mac</span>
-              <span className="text-orange-400 font-medium ml-1">Download &rarr;</span>
-            </a>
-            <button
-              onClick={() => setShowBanner(false)}
-              className="text-white/30 hover:text-white/60 transition-colors p-1"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-10">
-          <Link href="/" className="flex items-center gap-3 mb-2 hover:opacity-80 transition-opacity inline-block">
+        <div className="mb-8 flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <ArrowLeft className="w-4 h-4 text-white/50" />
-            <span className="text-[13px] text-white/50">Back to Super Tools</span>
+            <span className="text-[13px] text-white/50">Back</span>
           </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <Scale className="w-6 h-6 text-orange-400" />
-            <h1 className="text-2xl font-semibold tracking-tight">Argument Settler</h1>
+          <div className="w-px h-6 bg-neutral-800" />
+          <div className="flex items-center gap-2">
+            <Scale className="w-5 h-5 text-orange-400" />
+            <h1 className="text-lg font-semibold tracking-tight">Argument Settler</h1>
           </div>
-          <p className="text-neutral-500">AI-powered fact checker & debate resolver</p>
         </div>
 
         {/* Navigation Tabs */}

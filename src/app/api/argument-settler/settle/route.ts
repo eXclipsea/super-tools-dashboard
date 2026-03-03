@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getClaude, openAIError } from '@/lib/openai';
+import { getOpenAI, openAIError } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
-    const anthropic = getClaude();
+    const openai = getOpenAI();
     const { claimA, claimB, category, roastMode } = await request.json();
 
     if (!claimA || !claimB) {
@@ -14,13 +14,16 @@ export async function POST(request: NextRequest) {
       ? 'Add a short funny roast of the losing side (1-2 sentences) in a "roast" field.'
       : 'Set "roast" to null.';
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 600,
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
       messages: [
         {
+          role: 'system',
+          content: 'You are an expert fact-checker and debate analyst. Always return valid JSON.',
+        },
+        {
           role: 'user',
-          content: `You are an expert fact-checker. Analyze this argument objectively.
+          content: `Analyze this argument objectively.
 
 Category: ${category}
 
@@ -48,9 +51,11 @@ Return ONLY JSON:
 }`,
         },
       ],
+      response_format: { type: 'json_object' },
+      max_tokens: 600,
     });
 
-    const content = message.content[0].type === 'text' ? message.content[0].text : '';
+    const content = response.choices[0].message.content || '{}';
     const verdict = JSON.parse(content);
     return NextResponse.json({ verdict });
   } catch (error: any) {

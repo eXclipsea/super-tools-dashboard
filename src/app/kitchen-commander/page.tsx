@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Camera, Upload, ChefHat, Plus, X, Calendar, AlertCircle, Sparkles, Trash2, Search, Download, ArrowLeft, User } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Camera, Upload, ChefHat, Plus, X, Calendar, AlertCircle, Sparkles, Trash2, Search, ArrowLeft, User, Aperture, FolderPlus, Image, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import { getCurrentUser, logout } from '@/lib/auth';
+import { saveData, loadData } from '@/lib/data';
+import { CameraCapture } from '@/components/CameraCapture';
 
 interface PantryItem {
   id: string;
@@ -15,23 +17,42 @@ interface PantryItem {
   category: string;
 }
 
+interface Pantry {
+  id: string;
+  name: string;
+  photos: string[];
+  items: PantryItem[];
+  createdAt: string;
+}
+
 interface Recipe {
   id: string;
   name: string;
   ingredients: string[];
+  availableIngredients?: string[];
+  missingIngredients?: string[];
   matchScore: number;
   timeToCook: string;
   difficulty: string;
   calories: number;
+  servings?: number;
+  macros?: { protein: string; carbs: string; fat: string; fiber: string };
+  briefDescription?: string;
+  fullInstructions?: string;
   instructions?: string;
 }
 
-const CATEGORIES = ['All', 'Produce', 'Dairy', 'Meat', 'Pantry', 'Frozen', 'Beverages'];
+const CATEGORIES = ['All', 'Produce', 'Dairy', 'Meat', 'Pantry', 'Frozen', 'Beverages', 'Condiments', 'Snacks'];
 
 export default function KitchenCommander() {
   const [activeTab, setActiveTab] = useState<'photo' | 'pantry' | 'recipes' | 'shopping'>('photo');
-  const [showBanner, setShowBanner] = useState(true);
   const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
+  const [pantries, setPantries] = useState<Pantry[]>([]);
+  const [activePantryId, setActivePantryId] = useState<string | null>(null);
+  const [showNewPantryForm, setShowNewPantryForm] = useState(false);
+  const [newPantryName, setNewPantryName] = useState('');
+  const [renamingPantryId, setRenamingPantryId] = useState<string | null>(null);
+  const [renamePantryName, setRenamePantryName] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -46,14 +67,99 @@ export default function KitchenCommander() {
   const [loadingStep, setLoadingStep] = useState('');
   const [recipeError, setRecipeError] = useState('');
   const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [addedToList, setAddedToList] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [expandedRecipeId, setExpandedRecipeId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load user session on mount
+  const activePantry = pantries.find(p => p.id === activePantryId) || null;
+
+  // Load user session and data on mount
   useEffect(() => {
     const user = getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-    }
+    if (user) setCurrentUser(user);
+    
+    const init = async () => {
+      const [savedPantries, savedRecipes, savedShopping] = await Promise.all([
+        loadData('kitchen_pantries', []),
+        loadData('kitchen_recipes', []),
+        loadData('kitchen_shopping', [])
+      ]);
+      if (savedPantries && savedPantries.length > 0) {
+        setPantries(savedPantries);
+        setActivePantryId(savedPantries[0].id);
+        setPantryItems(savedPantries[0].items || []);
+      }
+      if (savedRecipes) setRecipes(savedRecipes);
+      if (savedShopping) setShoppingList(savedShopping);
+      setIsInitialized(true);
+    };
+    init();
   }, []);
+
+  // Persist data whenever it changes
+  useEffect(() => {
+    if (isInitialized) saveData('kitchen_pantries', pantries);
+  }, [pantries, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) saveData('kitchen_recipes', recipes);
+  }, [recipes, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) saveData('kitchen_shopping', shoppingList);
+  }, [shoppingList, isInitialized]);
+
+  // Sync active pantry items back to pantries array
+  useEffect(() => {
+    if (activePantryId && isInitialized) {
+      setPantries(prev => prev.map(p => p.id === activePantryId ? { ...p, items: pantryItems } : p));
+    }
+  }, [pantryItems, activePantryId, isInitialized]);
+
+  const createPantry = (name: string) => {
+    const newPantry: Pantry = { id: Date.now().toString(), name, photos: [], items: [], createdAt: new Date().toISOString() };
+    setPantries(prev => [...prev, newPantry]);
+    setActivePantryId(newPantry.id);
+    setPantryItems([]);
+    setShowNewPantryForm(false);
+    setNewPantryName('');
+  };
+
+  const switchPantry = (id: string) => {
+    const pantry = pantries.find(p => p.id === id);
+    if (pantry) {
+      setActivePantryId(id);
+      setPantryItems(pantry.items || []);
+    }
+  };
+
+  const deletePantry = (id: string) => {
+    setPantries(prev => prev.filter(p => p.id !== id));
+    if (activePantryId === id) {
+      const remaining = pantries.filter(p => p.id !== id);
+      if (remaining.length > 0) {
+        setActivePantryId(remaining[0].id);
+        setPantryItems(remaining[0].items || []);
+      } else {
+        setActivePantryId(null);
+        setPantryItems([]);
+      }
+    }
+  };
+
+  const renamePantry = (id: string, name: string) => {
+    setPantries(prev => prev.map(p => p.id === id ? { ...p, name } : p));
+    setRenamingPantryId(null);
+    setRenamePantryName('');
+  };
+
+  const addPhotoToPantry = (photo: string) => {
+    if (activePantryId) {
+      setPantries(prev => prev.map(p => p.id === activePantryId ? { ...p, photos: [...p.photos, photo] } : p));
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -70,6 +176,11 @@ export default function KitchenCommander() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCameraCapture = (imageData: string) => {
+    setSelectedImage(imageData);
+    setShowCamera(false);
   };
 
   const analyzeImage = async () => {
@@ -109,6 +220,7 @@ export default function KitchenCommander() {
         addedDate: new Date().toISOString(),
       }));
       setPantryItems(prev => [...prev, ...newItems]);
+      if (selectedImage) addPhotoToPantry(selectedImage);
       setActiveTab('pantry');
     } catch (err: any) {
       console.error('Analyze error:', err);
@@ -167,6 +279,8 @@ export default function KitchenCommander() {
   const addToShoppingList = (item: string) => {
     if (!shoppingList.includes(item)) {
       setShoppingList(prev => [...prev, item]);
+      setAddedToList(item);
+      setTimeout(() => setAddedToList(null), 2000);
     }
   };
 
@@ -182,51 +296,112 @@ export default function KitchenCommander() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Download Popup */}
-      {showBanner && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-green-500/10 backdrop-blur-xl border-b border-green-400/20">
-          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
-            <a
-              href="https://github.com/eXclipsea/kitchen-commander/releases/download/v0.1.0/KitchenCommander_0.1.0_aarch64.dmg"
-              className="flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
-            >
-              <Download className="w-3.5 h-3.5 text-green-400" />
-              <span>Get <strong>Kitchen Commander</strong> for Mac</span>
-              <span className="text-green-400 font-medium ml-1">Download &rarr;</span>
-            </a>
-            <button
-              onClick={() => setShowBanner(false)}
-              className="text-white/30 hover:text-white/60 transition-colors p-1"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-10 flex items-start justify-between">
-          <div>
-            <Link href="/" className="flex items-center gap-3 mb-2 hover:opacity-80 transition-opacity inline-block">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-4 h-4 text-white/50" />
-              <span className="text-[13px] text-white/50">Back to Super Tools</span>
+              <span className="text-[13px] text-white/50">Back</span>
             </Link>
-            <div className="flex items-center gap-3 mb-2">
-              <ChefHat className="w-6 h-6 text-green-400" />
-              <h1 className="text-2xl font-semibold tracking-tight">Kitchen Commander</h1>
+            <div className="w-px h-6 bg-neutral-800" />
+            <div className="flex items-center gap-2">
+              <ChefHat className="w-5 h-5 text-green-400" />
+              <h1 className="text-lg font-semibold tracking-tight">Kitchen Commander</h1>
             </div>
-            <p className="text-neutral-500">{currentUser ? `Welcome back, ${currentUser.name}` : 'AI-powered pantry & recipe management'}</p>
           </div>
           {currentUser && (
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">{currentUser.name.charAt(0).toUpperCase()}</span>
+              <div className="w-7 h-7 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-medium">{currentUser.name.charAt(0).toUpperCase()}</span>
               </div>
               <button onClick={handleLogout} className="text-white/50 hover:text-white text-sm">Logout</button>
             </div>
           )}
         </div>
+
+        {/* Pantry Selector */}
+        <div className="mb-6 flex items-center gap-3 overflow-x-auto pb-2">
+          {pantries.map(p => (
+            <button
+              key={p.id}
+              onClick={() => switchPantry(p.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                activePantryId === p.id
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  : 'bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-700'
+              }`}
+            >
+              {renamingPantryId === p.id ? (
+                <form onSubmit={(e) => { e.preventDefault(); renamePantry(p.id, renamePantryName); }} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={renamePantryName}
+                    onChange={(e) => setRenamePantryName(e.target.value)}
+                    className="bg-transparent border-b border-green-400 text-white text-sm w-24 focus:outline-none"
+                    autoFocus
+                  />
+                  <button type="submit" className="text-green-400 text-xs">Save</button>
+                </form>
+              ) : (
+                <>
+                  <Image className="w-3.5 h-3.5" />
+                  {p.name}
+                  {activePantryId === p.id && (
+                    <span className="text-xs text-green-400/60">({p.items.length})</span>
+                  )}
+                </>
+              )}
+            </button>
+          ))}
+          {showNewPantryForm ? (
+            <form onSubmit={(e) => { e.preventDefault(); if (newPantryName.trim()) createPantry(newPantryName.trim()); }} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newPantryName}
+                onChange={(e) => setNewPantryName(e.target.value)}
+                placeholder="Pantry name"
+                className="bg-neutral-900 border border-neutral-700 text-white text-sm rounded-lg px-3 py-2 w-32 focus:outline-none focus:border-green-500"
+                autoFocus
+              />
+              <button type="submit" className="text-green-400 text-sm font-medium">Add</button>
+              <button type="button" onClick={() => setShowNewPantryForm(false)} className="text-neutral-500 text-sm">Cancel</button>
+            </form>
+          ) : (
+            <button
+              onClick={() => setShowNewPantryForm(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-neutral-900 text-neutral-500 border border-dashed border-neutral-700 hover:border-green-500/50 hover:text-green-400 transition-colors whitespace-nowrap"
+            >
+              <FolderPlus className="w-3.5 h-3.5" />
+              New Pantry
+            </button>
+          )}
+        </div>
+
+        {/* Active Pantry Actions */}
+        {activePantry && (
+          <div className="mb-4 flex items-center gap-3 text-xs">
+            <button onClick={() => { setRenamingPantryId(activePantry.id); setRenamePantryName(activePantry.name); }} className="text-neutral-500 hover:text-white flex items-center gap-1 transition-colors"><Edit2 className="w-3 h-3" /> Rename</button>
+            <button onClick={() => deletePantry(activePantry.id)} className="text-red-400/60 hover:text-red-400 flex items-center gap-1 transition-colors"><Trash2 className="w-3 h-3" /> Delete Pantry</button>
+            {activePantry.photos.length > 0 && <span className="text-neutral-600">{activePantry.photos.length} photo(s)</span>}
+          </div>
+        )}
+
+        {!activePantry && pantries.length === 0 && (
+          <div className="text-center py-16">
+            <FolderPlus className="w-12 h-12 text-neutral-700 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-neutral-400 mb-2">Create your first pantry</h3>
+            <p className="text-neutral-600 text-sm mb-6">Organize your food by location — fridge, pantry shelf, freezer, etc.</p>
+            <button
+              onClick={() => setShowNewPantryForm(true)}
+              className="bg-green-500 hover:bg-green-600 text-black font-medium py-2.5 px-6 rounded-lg text-sm"
+            >
+              Create Pantry
+            </button>
+          </div>
+        )}
+
+        {activePantry && (<>
 
         {/* Navigation Tabs */}
         <div className="flex gap-1 mb-10 border-b border-neutral-800">
@@ -254,13 +429,59 @@ export default function KitchenCommander() {
         {/* Photo Tab */}
         {activeTab === 'photo' && (
           <div className="space-y-6">
+            {/* Instructions Card */}
+            <div className="bg-neutral-900/50 rounded-xl p-4 border border-neutral-800">
+              <h3 className="text-sm font-medium text-neutral-300 mb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-green-400" />
+                How it works
+              </h3>
+              <ol className="text-sm text-neutral-500 space-y-1 list-decimal list-inside">
+                <li>Take a photo of your fridge, pantry, or grocery items</li>
+                <li>AI will automatically identify items and suggest quantities</li>
+                <li>Review and add items to your pantry with expiry dates</li>
+                <li>Get recipe suggestions based on what you have</li>
+              </ol>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-lg font-semibold mb-4">Upload Photo</h3>
-                <div className="border-2 border-dashed border-neutral-800 rounded-xl p-8 text-center">
-                  {selectedImage ? (
-                    <div className="space-y-4">
-                      <img src={selectedImage} alt="Uploaded" className="w-full h-64 object-cover rounded-lg" />
+                <h3 className="text-lg font-semibold mb-4">Upload or Capture Photo</h3>
+                
+                {!selectedImage ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-neutral-800 hover:border-neutral-600 rounded-xl p-6 text-center transition-colors"
+                    >
+                      <Upload className="w-8 h-8 text-neutral-600 mx-auto mb-2" />
+                      <p className="text-neutral-400 text-sm">Upload Photo</p>
+                      <p className="text-neutral-600 text-xs mt-1">From device</p>
+                    </button>
+                    <button
+                      onClick={() => setShowCamera(true)}
+                      className="border-2 border-dashed border-green-400/50 hover:border-green-400 rounded-xl p-6 text-center transition-colors"
+                    >
+                      <Aperture className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                      <p className="text-green-400 text-sm">Take Photo</p>
+                      <p className="text-neutral-600 text-xs mt-1">Use camera</p>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-neutral-800 rounded-xl p-4 text-center">
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <img src={selectedImage} alt="Uploaded" className="w-full h-64 object-cover rounded-lg" />
+                        {/* White detection zone overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-[70%] h-[70%] border-2 border-white/40 rounded-xl">
+                            <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-white rounded-tl-lg" />
+                            <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-white rounded-tr-lg" />
+                            <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-white rounded-bl-lg" />
+                            <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-white rounded-br-lg" />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-neutral-600">AI scans the highlighted area for food items</p>
                       <button
                         onClick={() => setSelectedImage(null)}
                         className="text-red-400 hover:text-red-300 text-sm"
@@ -268,26 +489,16 @@ export default function KitchenCommander() {
                         Remove Image
                       </button>
                     </div>
-                  ) : (
-                    <div>
-                      <Upload className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
-                      <p className="text-neutral-400 mb-4">Drag and drop or click to upload</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label
-                        htmlFor="image-upload"
-                        className="inline-block bg-green-500 hover:bg-green-600 text-black font-medium py-2 px-4 rounded-lg cursor-pointer text-sm"
-                      >
-                        Choose Image
-                      </label>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
               </div>
 
               <div>
@@ -312,24 +523,57 @@ export default function KitchenCommander() {
                       AI will identify items, quantities, and suggest expiry dates
                     </p>
                     {analyzeNotice && (
-                      <div className="flex items-start gap-2 text-amber-400 text-sm bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 mt-2">
-                        <span className="shrink-0 mt-0.5">⚠</span>
-                        <div>
-                          <p className="font-medium mb-1">AI couldn't detect items</p>
-                          <p>{analyzeNotice}</p>
-                          <p className="text-amber-600 mt-1 text-xs">Tips: good lighting, photo facing into the fridge, avoid glare</p>
+                      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                        <p className="text-amber-400 text-sm font-medium mb-1 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          AI couldn't detect items
+                        </p>
+                        <p className="text-amber-300 text-sm">{analyzeNotice}</p>
+                        <div className="mt-3 text-xs text-neutral-500 space-y-1">
+                          <p className="font-medium text-neutral-400">Tips for better results:</p>
+                          <ul className="list-disc list-inside space-y-0.5">
+                            <li>Use good lighting - avoid shadows and glare</li>
+                            <li>Photo facing directly into the fridge/pantry</li>
+                            <li>Make sure item labels are visible</li>
+                            <li>Include multiple items in one photo</li>
+                            <li>Try a different angle if detection fails</li>
+                          </ul>
                         </div>
                       </div>
                     )}
                     {analyzeError && (
-                      <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        {analyzeError}
+                      <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <p className="text-red-400 text-sm font-medium mb-1 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          Something went wrong
+                        </p>
+                        <p className="text-red-300 text-sm">{analyzeError}</p>
+                        <div className="mt-3 text-xs text-neutral-500 space-y-1">
+                          <p className="font-medium text-neutral-400">Try these steps:</p>
+                          <ul className="list-disc list-inside space-y-0.5">
+                            <li>Check your internet connection</li>
+                            <li>Try uploading a smaller image file</li>
+                            <li>Ensure the image format is JPG or PNG</li>
+                            <li>Refresh the page and try again</li>
+                            <li>If problems persist, try manual entry</li>
+                          </ul>
+                        </div>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-neutral-500">Upload an image to get started</p>
+                  <div className="bg-neutral-900/50 rounded-xl p-6 border border-neutral-800">
+                    <p className="text-neutral-500 mb-3">Upload an image to get started</p>
+                    <div className="text-xs text-neutral-600 space-y-1">
+                      <p className="font-medium text-neutral-500">Photo tips:</p>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        <li>Take photos in good lighting</li>
+                        <li>Include the whole item/label</li>
+                        <li>Hold camera steady for clear shots</li>
+                        <li>Works best with packaged groceries</li>
+                      </ul>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -412,9 +656,13 @@ export default function KitchenCommander() {
                       <span>{item.name} - {item.expiryDate}</span>
                       <button
                         onClick={() => addToShoppingList(item.name)}
-                        className="text-green-400 hover:text-green-300"
+                        className={`transition-colors ${
+                          addedToList === item.name 
+                            ? 'text-green-400 font-medium' 
+                            : 'text-green-400 hover:text-green-300'
+                        }`}
                       >
-                        Add to List
+                        {addedToList === item.name ? '✓ Added!' : 'Add to List'}
                       </button>
                     </div>
                   ))}
@@ -435,9 +683,13 @@ export default function KitchenCommander() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => addToShoppingList(item.name)}
-                      className="text-green-400 hover:text-green-300 text-sm"
+                      className={`transition-colors text-sm ${
+                        addedToList === item.name 
+                          ? 'text-green-400 font-medium' 
+                          : 'text-green-400 hover:text-green-300'
+                      }`}
                     >
-                      Add to List
+                      {addedToList === item.name ? '✓ Added!' : 'Add to List'}
                     </button>
                     <button
                       onClick={() => deleteItem(item.id)}
@@ -482,31 +734,84 @@ export default function KitchenCommander() {
               </div>
             ) : (
               <div className="grid gap-4">
-                {recipes.map(recipe => (
+                {recipes.map(recipe => {
+                  const isExpanded = expandedRecipeId === recipe.id;
+                  return (
                   <div key={recipe.id} className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="font-semibold text-lg">{recipe.name}</h4>
-                        <p className="text-sm text-neutral-500">{recipe.timeToCook} • {recipe.difficulty} • {recipe.calories} cal</p>
+                        {recipe.briefDescription && (
+                          <p className="text-sm text-neutral-400 italic mt-0.5">{recipe.briefDescription}</p>
+                        )}
+                        <p className="text-sm text-neutral-500 mt-1">{recipe.timeToCook} • {recipe.difficulty} • {recipe.calories} cal{recipe.servings ? ` • ${recipe.servings} servings` : ''}</p>
                       </div>
-                      <div className="text-green-400 font-medium">{recipe.matchScore}% Match</div>
+                      <div className={`font-semibold text-sm px-3 py-1 rounded-full ${
+                        recipe.matchScore >= 80 ? 'bg-green-500/20 text-green-400' :
+                        recipe.matchScore >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>{recipe.matchScore}% Match</div>
                     </div>
-                    <div>
-                      <h5 className="font-medium mb-2">Ingredients:</h5>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {recipe.ingredients.map((ing, idx) => (
-                          <span key={idx} className="bg-neutral-800 px-3 py-1 rounded-full text-sm">{ing}</span>
+
+                    {recipe.macros && (
+                      <div className="flex gap-3 mb-4">
+                        {Object.entries(recipe.macros).map(([key, val]) => (
+                          <span key={key} className="text-xs bg-neutral-800 px-2.5 py-1 rounded-lg">
+                            <span className="text-neutral-500 capitalize">{key}</span> <span className="text-white font-medium">{val}</span>
+                          </span>
                         ))}
                       </div>
+                    )}
+
+                    <div className="mb-3">
+                      <h5 className="font-medium mb-2 text-sm">Ingredients:</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {recipe.ingredients.map((ing, idx) => {
+                          const isAvailable = recipe.availableIngredients?.some(a => 
+                            ing.toLowerCase().includes(a.toLowerCase())
+                          );
+                          return (
+                            <span key={idx} className={`px-3 py-1 rounded-full text-sm ${
+                              isAvailable ? 'bg-green-500/15 text-green-300 border border-green-500/20' : 'bg-neutral-800 text-neutral-400'
+                            }`}>{ing}</span>
+                          );
+                        })}
+                      </div>
+                      {recipe.missingIngredients && recipe.missingIngredients.length > 0 && (
+                        <p className="text-xs text-neutral-500 mt-2">
+                          Missing: {recipe.missingIngredients.join(', ')}
+                        </p>
+                      )}
                     </div>
-                    {recipe.instructions && (
-                      <div>
-                        <h5 className="font-medium mb-2">Instructions:</h5>
-                        <p className="text-sm text-neutral-400 leading-relaxed">{recipe.instructions}</p>
+
+                    {!isExpanded ? (
+                      <button
+                        onClick={() => setExpandedRecipeId(recipe.id)}
+                        className="text-green-400 hover:text-green-300 text-sm font-medium mt-2 transition-colors"
+                      >
+                        Read More →
+                      </button>
+                    ) : (
+                      <div className="mt-4 border-t border-neutral-800 pt-4 space-y-4">
+                        {(recipe.fullInstructions || recipe.instructions) && (
+                          <div>
+                            <h5 className="font-medium mb-3 text-sm">Step-by-Step Instructions:</h5>
+                            <div className="text-sm text-neutral-300 leading-relaxed whitespace-pre-line">
+                              {recipe.fullInstructions || recipe.instructions}
+                            </div>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => setExpandedRecipeId(null)}
+                          className="text-neutral-500 hover:text-neutral-300 text-sm font-medium transition-colors"
+                        >
+                          Show Less ↑
+                        </button>
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -539,7 +844,35 @@ export default function KitchenCommander() {
             )}
           </div>
         )}
+
+        {/* Pantry Photos Gallery */}
+        {activePantry && activePantry.photos.length > 0 && activeTab === 'pantry' && (
+          <div className="mt-6">
+            <h4 className="text-sm font-medium text-neutral-400 mb-3">Pantry Photos</h4>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {activePantry.photos.map((photo, idx) => (
+                <div key={idx} className="relative shrink-0">
+                  <img src={photo} alt={`Pantry photo ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border border-neutral-800" />
+                  <button
+                    onClick={() => setPantries(prev => prev.map(p => p.id === activePantryId ? { ...p, photos: p.photos.filter((_, i) => i !== idx) } : p))}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        </>)}
       </div>
+      {showCamera && (
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onCancel={() => setShowCamera(false)}
+        />
+      )}
     </div>
   );
 }

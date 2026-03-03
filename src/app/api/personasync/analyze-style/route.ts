@@ -1,14 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGroq, openAIError } from '@/lib/openai';
+import OpenAI from 'openai';
+import { openAIError } from '@/lib/openai';
+
+function getGroqClient(apiKey: string) {
+  return new OpenAI({
+    apiKey,
+    baseURL: 'https://api.groq.com/openai/v1',
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const groq = getGroq();
-    const { examples } = await request.json();
+    const { examples, groqApiKey } = await request.json();
 
     if (!examples) {
       return NextResponse.json({ error: 'No examples provided' }, { status: 400 });
     }
+
+    // Use user's Groq key if provided, otherwise fallback to server Groq
+    const groq = groqApiKey?.startsWith('gsk_') 
+      ? getGroqClient(groqApiKey)
+      : new OpenAI({ 
+          apiKey: process.env.GROQ_API_KEY!,
+          baseURL: 'https://api.groq.com/openai/v1',
+        });
 
     const response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',

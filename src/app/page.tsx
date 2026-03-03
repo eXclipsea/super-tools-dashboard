@@ -1,25 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Receipt, 
-  ChefHat, 
-  Users, 
-  Mic, 
+import { useRouter } from 'next/navigation';
+import {
+  Receipt,
+  ChefHat,
+  Users,
+  Mic,
   Scale,
   Quote,
   ArrowRight,
-  ArrowUpRight,
   Download,
   Zap,
   Shield,
   Cpu,
   Apple,
-  Check,
   X,
   User,
   Mail,
-  Lock
+  Lock,
+  ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
 import { getCurrentUser, setCurrentUser as saveUserToStorage, logout, findUser, createUser } from '@/lib/auth';
@@ -59,9 +59,9 @@ const apps = [
     exe: 'https://github.com/eXclipsea/persona-drafter/releases/download/v0.1.0/PersonaSync_0.1.0_x64-setup.exe',
   },
   {
-    name: 'VoiceTask',
-    tagline: 'Talk it out. Get it done.',
-    description: 'Record a voice memo. AI turns it into organized, prioritized tasks with deadlines — no typing required.',
+    name: 'FlowMeet',
+    tagline: 'Tasks, scheduled and tracked.',
+    description: 'Plan your week with a color-coded calendar. Add tasks with priorities and due dates, then let AI suggest what to tackle next.',
     icon: Mic,
     color: '#a78bfa',
     gradient: 'from-violet-500/20 to-violet-500/5',
@@ -94,13 +94,11 @@ const apps = [
 ];
 
 export default function Dashboard() {
+  const router = useRouter();
   const [hoveredApp, setHoveredApp] = useState<string | null>(null);
-  const [showDownloads, setShowDownloads] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [purchaseComplete, setPurchaseComplete] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
+  const [xattrOpen, setXattrOpen] = useState(false);
+
   // Auth state
   const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -119,34 +117,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  const handlePurchase = async () => {
-    setIsProcessing(true);
-    
-    try {
-      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-
-      // Create checkout session
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productName: 'Super Tools Dashboard' })
-      });
-      
-      const { sessionId } = await response.json();
-      
-      // Redirect to Stripe Checkout
-      const { error } = await stripe.redirectToCheckout({ sessionId });
-      
-      if (error) {
-        console.error('Stripe error:', error);
-      }
-    } catch (error) {
-      console.error('Purchase error:', error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   // Auth handlers
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +127,7 @@ export default function Dashboard() {
       setCurrentUser(user);
       setShowLoginModal(false);
       if (pendingRoute) {
-        window.location.href = pendingRoute;
+        router.push(pendingRoute);
         setPendingRoute(null);
       }
     } else {
@@ -178,7 +148,7 @@ export default function Dashboard() {
     setCurrentUser(user);
     setShowLoginModal(false);
     if (pendingRoute) {
-      window.location.href = pendingRoute;
+      router.push(pendingRoute);
       setPendingRoute(null);
     }
   };
@@ -195,9 +165,9 @@ export default function Dashboard() {
     if (!currentUser) {
       setPendingRoute(route);
       setShowLoginModal(true);
-      return false;
+      return;
     }
-    return true;
+    router.push(route);
   };
 
   return (
@@ -242,7 +212,7 @@ export default function Dashboard() {
             className={`transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
             <p className="text-blue-400 text-sm font-medium tracking-wide uppercase mb-5">
-              5 tools. One app. Zero friction.
+              6 tools. One app. Zero friction.
             </p>
             <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.05] tracking-tight max-w-3xl">
               The toolkit that
@@ -252,15 +222,23 @@ export default function Dashboard() {
               </span>
             </h1>
             <p className="text-white/45 text-lg mt-6 max-w-xl leading-relaxed">
-              Five focused apps that handle the tedious stuff — receipts, cooking, writing, tasks, and arguments — so you can spend time on what matters.
+              Six focused apps that handle the tedious stuff — receipts, cooking, writing, tasks, arguments, and formalizing text — so you can spend time on what matters.
             </p>
-            <div className="flex items-center gap-4 mt-10">
+            <div className="flex items-center gap-4 mt-10 flex-wrap">
               <a
                 href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg"
                 className="group inline-flex items-center gap-2.5 bg-white text-black font-semibold text-[15px] px-7 py-3.5 rounded-full hover:bg-white/90 transition-all"
               >
                 <Apple className="w-4 h-4" />
                 Download for Mac
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+              <a
+                href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/Super.Tools_0.1.0_x64-setup.exe"
+                className="group inline-flex items-center gap-2.5 bg-blue-600 text-white font-semibold text-[15px] px-7 py-3.5 rounded-full hover:bg-blue-500 transition-all"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+                Download for Windows
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </a>
               <a
@@ -279,7 +257,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-6 py-6 grid grid-cols-3 gap-8">
           {[
             { icon: Cpu, label: 'Powered by GPT-4o', sub: 'Latest AI models' },
-            { icon: Shield, label: 'Private by default', sub: 'Your data stays yours' },
+            { icon: Shield, label: 'Secure by default', sub: 'Encrypted API, no data stored' },
             { icon: Zap, label: 'Instant results', sub: 'No setup required' },
           ].map(({ icon: Icon, label, sub }) => (
             <div key={label} className="flex items-center gap-3">
@@ -297,7 +275,7 @@ export default function Dashboard() {
       <section id="apps" className="max-w-6xl mx-auto px-6 py-24">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight">
-            Five apps. Each one does its job.
+            Six apps. Each one does its job.
           </h2>
           <p className="text-white/40 mt-3 text-lg">
             Click any app to open it right here.
@@ -310,7 +288,7 @@ export default function Dashboard() {
             return (
               <div
                 key={app.name}
-                onClick={() => handleAppClick(app.route) && (window.location.href = app.route)}
+                onClick={() => handleAppClick(app.route)}
                 onMouseEnter={() => setHoveredApp(app.name)}
                 onMouseLeave={() => setHoveredApp(null)}
                 className="group relative bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-2xl border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer overflow-hidden block"
@@ -352,7 +330,7 @@ export default function Dashboard() {
               Get the native app.
             </h2>
             <p className="text-white/40 mt-3 text-lg max-w-md mx-auto">
-              All five tools in a single Mac app. Free, fast, and always up to date.
+              All six tools in one desktop app. Free, fast, and always up to date.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4">
               <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-3xl border border-white/[0.06] p-12">
@@ -363,21 +341,21 @@ export default function Dashboard() {
                     </div>
                   </div>
                   
-                  <h2 className="text-3xl font-bold mb-4">Get Super Tools Dashboard</h2>
+                  <h2 className="text-3xl font-bold mb-4">Get Super Tools</h2>
                   <p className="text-lg text-white/60 mb-8 max-w-2xl mx-auto">
-                    Download the complete Super Tools Dashboard as a desktop app. All 5 AI-powered tools in one beautiful, native application.
+                    Download Super Tools as a desktop app. All 6 AI-powered tools in one beautiful, native application. Completely free.
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                    <button
-                      onClick={() => setShowPurchaseModal(true)}
+                    <a
+                      href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/SuperTools_0.1.0_aarch64.dmg"
                       className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
                     >
                       <Apple className="w-5 h-5" />
                       Download for Mac
-                    </button>
+                    </a>
                     <a
-                      href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/Super%20Tools_0.1.0_x64-setup.exe"
+                      href="https://github.com/eXclipsea/super-tools-dashboard/releases/download/v0.1.0/Super.Tools_0.1.0_x64-setup.exe"
                       className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
                     >
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -391,7 +369,7 @@ export default function Dashboard() {
                     <div className="text-center">
                       <Shield className="w-8 h-8 text-blue-400 mx-auto mb-3" />
                       <h3 className="font-semibold mb-2">Privacy First</h3>
-                      <p className="text-sm text-white/60">All processing happens locally. Your data never leaves your device.</p>
+                      <p className="text-sm text-white/60">Processed securely via OpenAI's encrypted API — never stored or used for training.</p>
                     </div>
                     <div className="text-center">
                       <Zap className="w-8 h-8 text-purple-400 mx-auto mb-3" />
@@ -403,6 +381,27 @@ export default function Dashboard() {
                       <h3 className="font-semibold mb-2">AI Powered</h3>
                       <p className="text-sm text-white/60">Advanced AI models for receipt scanning, voice transcription, and more.</p>
                     </div>
+                  </div>
+
+                  <div className="mt-10 max-w-xl mx-auto">
+                    <button
+                      onClick={() => setXattrOpen(o => !o)}
+                      className="flex items-center gap-2 text-sm text-white/40 hover:text-white/60 transition-colors mx-auto"
+                    >
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform ${xattrOpen ? 'rotate-180' : ''}`} />
+                      Mac: App blocked by Gatekeeper?
+                    </button>
+                    {xattrOpen && (
+                      <div className="mt-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 text-left">
+                        <h4 className="text-amber-400 font-semibold text-sm mb-2">First-time setup</h4>
+                        <p className="text-sm text-white/60 mb-3">
+                          macOS may show &quot;app is damaged&quot; because it isn&apos;t signed with a paid Apple Developer certificate. Right-click the app → Open → click &quot;Open&quot; in the dialog. You only need to do this once.
+                        </p>
+                        <p className="text-xs text-white/40">
+                          Or open Terminal and run: <code className="font-mono text-green-400">xattr -cr /Applications/Super\ Tools.app</code>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -425,82 +424,6 @@ export default function Dashboard() {
           </p>
         </div>
       </footer>
-
-      {/* Purchase Modal */}
-      {showPurchaseModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-8 max-w-md w-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold">Get Super Tools</h3>
-              <button
-                onClick={() => setShowPurchaseModal(false)}
-                className="text-white/40 hover:text-white/60 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center gap-3">
-                <Apple className="w-6 h-6 text-blue-400" />
-                <div>
-                  <p className="font-medium">Super Tools Dashboard</p>
-                  <p className="text-sm text-white/60">Complete desktop app with all 6 tools</p>
-                </div>
-              </div>
-              
-              <div className="border-t border-white/[0.06] pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-white/60">One-time purchase</span>
-                  <span className="text-2xl font-bold">$2.99</span>
-                </div>
-                <p className="text-xs text-white/40">Lifetime access • Free updates • No subscription</p>
-              </div>
-              
-              <div className="space-y-2 text-sm text-white/60">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span>All 6 AI-powered tools</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span>Native macOS app</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span>Privacy-first design</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span>Free lifetime updates</span>
-                </div>
-              </div>
-            </div>
-            
-            <button
-              onClick={handlePurchase}
-              disabled={isProcessing}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-neutral-600 disabled:to-neutral-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              {isProcessing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Purchase with Stripe
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-            
-            <p className="text-xs text-white/40 text-center mt-4">
-              Secure payment powered by Stripe
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Login Modal */}
       {showLoginModal && (

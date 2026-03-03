@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Quote, ArrowLeft, Sparkles, Copy, Check, Download, X } from 'lucide-react';
+import { Quote, ArrowLeft, Sparkles, Copy, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { getCurrentUser, logout } from '@/lib/auth';
 
@@ -22,7 +22,6 @@ export default function Formalize() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
-  const [showBanner, setShowBanner] = useState(true);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -66,59 +65,24 @@ export default function Formalize() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Download Popup */}
-      {showBanner && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 backdrop-blur-xl border-b border-amber-400/20">
-          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <a
-                href="https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_aarch64.dmg"
-                className="flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
-              >
-                <Download className="w-3.5 h-3.5 text-amber-400" />
-                <span>Get <strong>Formalize</strong> for Mac</span>
-                <span className="text-amber-400 font-medium ml-1">&rarr;</span>
-              </a>
-              <span className="text-white/30">|</span>
-              <a
-                href="https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_x64-setup.exe"
-                className="flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
-              >
-                <Download className="w-3.5 h-3.5 text-amber-400" />
-                <span>Get <strong>Formalize</strong> for Windows</span>
-                <span className="text-amber-400 font-medium ml-1">&rarr;</span>
-              </a>
-            </div>
-            <button
-              onClick={() => setShowBanner(false)}
-              className="text-white/30 hover:text-white/60 transition-colors p-1"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-10 flex items-start justify-between">
-          <div>
-            <Link href="/" className="flex items-center gap-3 mb-2 hover:opacity-80 transition-opacity inline-block">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-4 h-4 text-white/50" />
-              <span className="text-[13px] text-white/50">Back to Super Tools</span>
+              <span className="text-[13px] text-white/50">Back</span>
             </Link>
-            <div className="flex items-center gap-3 mb-2">
-              <Quote className="w-6 h-6 text-amber-400" />
-              <h1 className="text-2xl font-semibold tracking-tight">Formalize</h1>
+            <div className="w-px h-6 bg-neutral-800" />
+            <div className="flex items-center gap-2">
+              <Quote className="w-5 h-5 text-amber-400" />
+              <h1 className="text-lg font-semibold tracking-tight">Formalize</h1>
             </div>
-            <p className="text-neutral-500">
-              {currentUser ? `Welcome back, ${currentUser.name}` : 'Transform your words into eloquence'}
-            </p>
           </div>
           {currentUser && (
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">{currentUser.name.charAt(0).toUpperCase()}</span>
+              <div className="w-7 h-7 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-medium">{currentUser.name.charAt(0).toUpperCase()}</span>
               </div>
               <button onClick={handleLogout} className="text-white/50 hover:text-white text-sm">Logout</button>
             </div>

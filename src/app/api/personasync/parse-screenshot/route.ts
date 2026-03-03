@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGroq, openAIError } from '@/lib/openai';
+import { getOpenAI, openAIError } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
-    const groq = getGroq();
+    const openai = getOpenAI();
     const { image } = await request.json();
 
     if (!image) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    const response = await groq.chat.completions.create({
-      model: 'llama-3.2-11b-vision-preview',
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
       messages: [
         {
           role: 'user',
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
           ],
         },
       ],
+      response_format: { type: 'json_object' },
       max_tokens: 400,
     });
 
