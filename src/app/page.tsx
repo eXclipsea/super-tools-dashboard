@@ -19,7 +19,11 @@ import {
   User,
   Mail,
   Lock,
-  ChevronDown
+  ChevronDown,
+  Utensils,
+  TrendingUp,
+  Plane,
+  Layers
 } from 'lucide-react';
 import Link from 'next/link';
 import { getCurrentUser, setCurrentUser as saveUserToStorage, logout, findUser, createUser } from '@/lib/auth';
@@ -90,7 +94,51 @@ const apps = [
     route: '/formalize',
     dmg: 'https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_aarch64.dmg',
     exe: 'https://github.com/eXclipsea/formalize/releases/download/v0.1.0/Formalize_0.1.0_x64-setup.exe',
-  }
+  },
+  {
+    name: 'DineDecide',
+    tagline: 'Two restaurants. One winner.',
+    description: 'Compare two restaurants side-by-side. AI scores food, service, value, and atmosphere — then picks the better one for you.',
+    icon: Utensils,
+    color: '#2dd4bf',
+    gradient: 'from-teal-400/20 to-teal-400/5',
+    route: '/dinedecide',
+    dmg: '',
+    exe: '',
+  },
+  {
+    name: 'HabitRise',
+    tagline: 'Build habits that stick.',
+    description: 'Tell AI your goal and get a personalized day-by-day habit plan with tasks, timings, and built-in progress tracking.',
+    icon: TrendingUp,
+    color: '#a3e635',
+    gradient: 'from-lime-400/20 to-lime-400/5',
+    route: '/habitrise',
+    dmg: '',
+    exe: '',
+  },
+  {
+    name: 'PackLight',
+    tagline: 'Pack smart, travel light.',
+    description: 'Enter your destination, trip length, and weather. Get a complete capsule wardrobe checklist — nothing missing, nothing wasted.',
+    icon: Plane,
+    color: '#60a5fa',
+    gradient: 'from-blue-400/20 to-blue-400/5',
+    route: '/packlight',
+    dmg: '',
+    exe: '',
+  },
+  {
+    name: 'SpaceClear',
+    tagline: 'Declutter in 10 minutes.',
+    description: 'Snap a photo of your messy room. AI makes a prioritized task list and starts a 10-minute timer to keep you moving.',
+    icon: Layers,
+    color: '#e879f9',
+    gradient: 'from-fuchsia-500/20 to-fuchsia-500/5',
+    route: '/spaceclear',
+    dmg: '',
+    exe: '',
+  },
 ];
 
 export default function Dashboard() {
@@ -212,7 +260,7 @@ export default function Dashboard() {
             className={`transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
             <p className="text-blue-400 text-sm font-medium tracking-wide uppercase mb-5">
-              6 tools. One app. Zero friction.
+              10 tools. One app. Zero friction.
             </p>
             <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.05] tracking-tight max-w-3xl">
               The toolkit that
@@ -222,7 +270,7 @@ export default function Dashboard() {
               </span>
             </h1>
             <p className="text-white/45 text-lg mt-6 max-w-xl leading-relaxed">
-              Six focused apps that handle the tedious stuff — receipts, cooking, writing, tasks, arguments, and formalizing text — so you can spend time on what matters.
+              Ten focused apps that handle the tedious stuff — receipts, cooking, writing, tasks, arguments, habits, dining, packing, decluttering, and more — so you can spend time on what matters.
             </p>
             <div className="flex items-center gap-4 mt-10 flex-wrap">
               <a
@@ -275,7 +323,7 @@ export default function Dashboard() {
       <section id="apps" className="max-w-6xl mx-auto px-6 py-24">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight">
-            Six apps. Each one does its job.
+            Ten apps. Each one does its job.
           </h2>
           <p className="text-white/40 mt-3 text-lg">
             Click any app to open it right here.
@@ -330,7 +378,7 @@ export default function Dashboard() {
               Get the native app.
             </h2>
             <p className="text-white/40 mt-3 text-lg max-w-md mx-auto">
-              All six tools in one desktop app. Free, fast, and always up to date.
+              All 10 tools in one desktop app. Free, fast, and always up to date.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4">
               <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-3xl border border-white/[0.06] p-12">
@@ -343,7 +391,7 @@ export default function Dashboard() {
                   
                   <h2 className="text-3xl font-bold mb-4">Get Super Tools</h2>
                   <p className="text-lg text-white/60 mb-8 max-w-2xl mx-auto">
-                    Download Super Tools as a desktop app. All 6 AI-powered tools in one beautiful, native application. Completely free.
+                    Download Super Tools as a desktop app. All 10 AI-powered tools in one beautiful, native application. Completely free.
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">

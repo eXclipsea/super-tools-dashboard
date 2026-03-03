@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Camera, Upload, ChefHat, Plus, X, Calendar, AlertCircle, Sparkles, Trash2, Search, ArrowLeft, User, Aperture, FolderPlus, Image, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import { getCurrentUser, logout } from '@/lib/auth';
@@ -45,6 +46,7 @@ interface Recipe {
 const CATEGORIES = ['All', 'Produce', 'Dairy', 'Meat', 'Pantry', 'Frozen', 'Beverages', 'Condiments', 'Snacks'];
 
 export default function KitchenCommander() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'photo' | 'pantry' | 'recipes' | 'shopping'>('photo');
   const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
   const [pantries, setPantries] = useState<Pantry[]>([]);
@@ -164,7 +166,7 @@ export default function KitchenCommander() {
   const handleLogout = () => {
     logout();
     setCurrentUser(null);
-    window.location.href = '/';
+    router.push('/');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

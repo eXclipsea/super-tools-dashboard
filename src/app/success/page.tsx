@@ -61,7 +61,7 @@ export default function SuccessPage() {
           </div>
           
           <div className="text-sm text-neutral-400 text-center">
-            <p>All 6 AI-powered tools in one desktop app</p>
+            <p>All 10 AI-powered tools in one desktop app</p>
             <p>Free lifetime updates • No subscription</p>
           </div>
         </div>

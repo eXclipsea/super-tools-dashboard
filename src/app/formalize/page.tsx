@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Quote, ArrowLeft, Sparkles, Copy, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { getCurrentUser, logout } from '@/lib/auth';
@@ -16,6 +17,7 @@ const styles = [
 ];
 
 export default function Formalize() {
+  const router = useRouter();
   const [inputText, setInputText] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('shakespeare');
   const [output, setOutput] = useState('');
@@ -33,7 +35,7 @@ export default function Formalize() {
   const handleLogout = () => {
     logout();
     setCurrentUser(null);
-    window.location.href = '/';
+    router.push('/');
   };
 
   const transformText = async () => {

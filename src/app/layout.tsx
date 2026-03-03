@@ -10,11 +10,11 @@ const BASE_URL = "https://supertoolz.xyz";
 
 export const metadata: Metadata = {
   title: {
-    default: "Super Tools — 6 AI-Powered Productivity Apps",
+    default: "Super Tools — 10 AI-Powered Productivity Apps",
     template: "%s | Super Tools",
   },
   description:
-    "Super Tools is a free suite of 6 AI-powered productivity apps: receipt scanning, pantry management, writing style analysis, task planning, argument fact-checking, and text formalization — all powered by GPT-4o.",
+    "Super Tools is a free suite of 10 AI-powered productivity apps: receipt scanning, pantry management, writing style analysis, task planning, argument fact-checking, text formalization, restaurant comparison, habit building, travel packing, and room decluttering — all powered by GPT-4o.",
   keywords: [
     "AI productivity tools",
     "GPT-4o apps",
@@ -36,9 +36,9 @@ export const metadata: Metadata = {
     type: "website",
     url: BASE_URL,
     siteName: "Super Tools",
-    title: "Super Tools — 6 AI-Powered Productivity Apps",
+    title: "Super Tools — 10 AI-Powered Productivity Apps",
     description:
-      "6 focused AI tools that handle receipts, cooking, writing, tasks, arguments, and text formalization — so you can focus on what matters.",
+      "10 focused AI tools that handle receipts, cooking, writing, tasks, arguments, habits, dining, packing, decluttering, and more — so you can focus on what matters.",
     images: [
       {
         url: `${BASE_URL}/og-image.png`,
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Super Tools — 6 AI-Powered Productivity Apps",
+    title: "Super Tools — 10 AI-Powered Productivity Apps",
     description:
-      "6 focused AI tools powered by GPT-4o. Receipts, cooking, writing, tasks, arguments, and more.",
+      "10 focused AI tools powered by GPT-4o. Receipts, cooking, writing, tasks, arguments, habits, dining, packing, and more.",
     images: [`${BASE_URL}/og-image.png`],
     creator: "@supertools",
   },
@@ -79,7 +79,7 @@ const softwareAppSchema = {
   operatingSystem: "Web, macOS, Windows",
   url: BASE_URL,
   description:
-    "A suite of 6 AI-powered productivity tools: QuickReceipt, Kitchen Commander, PersonaSync, FlowMeet, Argument Settler, and Formalize.",
+    "A suite of 10 AI-powered productivity tools: QuickReceipt, Kitchen Commander, PersonaSync, FlowMeet, Argument Settler, Formalize, DineDecide, HabitRise, PackLight, and SpaceClear.",
   creator: { "@type": "Person", name: "Landon Li" },
   offers: {
     "@type": "Offer",
@@ -95,6 +95,10 @@ const softwareAppSchema = {
     "Writing style analysis and AI message drafting",
     "AI-powered argument fact-checking with sources",
     "Text formalization into multiple literary styles",
+    "Restaurant comparison with AI scoring",
+    "Personalized AI habit plan generation",
+    "Smart travel packing list with capsule wardrobe",
+    "Room clutter analysis and decluttering task list",
   ],
   screenshot: `${BASE_URL}/og-image.png`,
   aggregateRating: {
